@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "LavaGO",
+    "slug": "lava-go-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0077B6"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.lavago.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "LavaGO utilise votre position pour trouver des nettoyeurs proches et suivre leur déplacement.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "LavaGO utilise votre position en arrière-plan pour le suivi en temps réel (nettoyeurs uniquement)."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0077B6"
+      },
+      "package": "com.lavago.app",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "VOTRE_CLE_GOOGLE_MAPS_ICI"
+        }
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "LavaGO a besoin de votre position pour le suivi des nettoyeurs."
+        }
+      ]
+    ]
+  }
+}
