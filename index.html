@@ -3,571 +3,237 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LavaGO — Nettoyage à domicile</title>
+  <title>Mutua — Solidarité au quotidien</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --brand: #00B4D8;
-      --brand-dark: #0077B6;
-      --brand-grad: linear-gradient(135deg, #00C6FB 0%, #005BEA 100%);
-      --accent: #FF6B35;
-      --accent-dark: #e05528;
-      --dark: #0F172A;
-      --slate: #334155;
-      --gray: #64748B;
-      --muted: #94A3B8;
-      --border: #E2E8F0;
-      --light: #F0F7FF;
-      --white: #FFFFFF;
-      --success: #10B981;
-      --warning: #F59E0B;
-      --danger: #EF4444;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
-      --shadow: 0 4px 16px rgba(0,0,0,.10);
-      --shadow-lg: 0 20px 40px rgba(0,0,0,.15);
-      --r: 14px;
-      --r-lg: 24px;
-      --r-full: 9999px;
+      --brand: #D97706; --brand-dark: #92400E; --brand-grad: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+      --accent: #059669; --accent-dark: #047857; --dark: #1C1917; --slate: #44403C;
+      --gray: #78716C; --muted: #A8A29E; --border: #E7E5E4; --light: #FEF3C7;
+      --white: #FFFFFF; --success: #059669; --warning: #D97706; --danger: #DC2626;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.08); --shadow: 0 4px 16px rgba(0,0,0,.10);
+      --shadow-lg: 0 20px 40px rgba(0,0,0,.15); --r: 14px; --r-lg: 24px; --r-full: 9999px;
     }
-
-    body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background: #E8F4FD;
-      color: var(--dark);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    #app {
-      width: 100%;
-      max-width: 420px;
-      min-height: 100vh;
-      background: var(--white);
-      position: relative;
-      overflow: hidden;
-      box-shadow: var(--shadow-lg);
-    }
-
-    /* ─── SCREENS ─── */
-    .screen {
-      display: none;
-      flex-direction: column;
-      min-height: 100vh;
-      animation: fadeSlideIn .35s ease;
-    }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #FEF7ED; color: var(--dark); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    #app { width: 100%; max-width: 420px; min-height: 100vh; background: var(--white); position: relative; overflow: hidden; box-shadow: var(--shadow-lg); }
+    .screen { display: none; flex-direction: column; min-height: 100vh; animation: fadeSlideIn .35s ease; }
     .screen.active { display: flex; }
-
-    @keyframes fadeSlideIn {
-      from { opacity: 0; transform: translateX(32px); }
-      to   { opacity: 1; transform: translateX(0); }
-    }
-    @keyframes fadeSlideBack {
-      from { opacity: 0; transform: translateX(-32px); }
-      to   { opacity: 1; transform: translateX(0); }
-    }
+    @keyframes fadeSlideIn { from { opacity: 0; transform: translateX(32px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes fadeSlideBack { from { opacity: 0; transform: translateX(-32px); } to { opacity: 1; transform: translateX(0); } }
     .screen.back { animation: fadeSlideBack .35s ease; }
-
-    /* ─── HEADER ─── */
-    .header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 20px;
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
-      position: sticky; top: 0; z-index: 10;
-    }
+    .header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
     .header .logo { font-size: 22px; font-weight: 900; color: var(--brand-dark); letter-spacing: -1px; }
     .header .logo span { color: var(--accent); }
-    .back-btn {
-      width: 36px; height: 36px; border-radius: 50%;
-      background: var(--light); border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px; color: var(--slate); transition: .2s;
-    }
+    .back-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--light); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--slate); transition: .2s; }
     .back-btn:hover { background: var(--border); }
 
-    /* ─── LANDING ─── */
-    .hero {
-      background: var(--brand-grad);
-      padding: 56px 28px 48px;
-      color: white; text-align: center;
-      position: relative; overflow: hidden;
-    }
-    .hero::before {
-      content: '';
-      position: absolute; top: -60px; right: -60px;
-      width: 220px; height: 220px;
-      border-radius: 50%;
-      background: rgba(255,255,255,.08);
-    }
-    .hero::after {
-      content: '';
-      position: absolute; bottom: -40px; left: -40px;
-      width: 160px; height: 160px;
-      border-radius: 50%;
-      background: rgba(255,255,255,.06);
-    }
-    .hero-icon { font-size: 72px; margin-bottom: 16px; filter: drop-shadow(0 4px 12px rgba(0,0,0,.2)); }
-    .hero h1 { font-size: 38px; font-weight: 900; letter-spacing: -2px; margin-bottom: 8px; }
-    .hero h1 span { color: #A5F3FC; }
-    .hero p { font-size: 16px; opacity: .9; line-height: 1.5; margin-bottom: 32px; }
-
-    .cta-btn {
-      display: inline-flex; align-items: center; gap: 10px;
-      background: var(--white); color: var(--brand-dark);
-      border: none; padding: 16px 32px; border-radius: var(--r-full);
-      font-size: 17px; font-weight: 700; cursor: pointer;
-      box-shadow: 0 8px 24px rgba(0,0,0,.2); transition: .2s;
-    }
+    .hero { background: var(--brand-grad); padding: 48px 28px 40px; color: white; text-align: center; position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; top: -60px; right: -60px; width: 220px; height: 220px; border-radius: 50%; background: rgba(255,255,255,.08); }
+    .hero::after { content: ''; position: absolute; bottom: -40px; left: -40px; width: 160px; height: 160px; border-radius: 50%; background: rgba(255,255,255,.06); }
+    .hero-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,.2); border-radius: var(--r-full); padding: 6px 14px; font-size: 12px; font-weight: 600; margin-bottom: 20px; position: relative; z-index: 1; }
+    .hero-icon { font-size: 64px; margin-bottom: 16px; filter: drop-shadow(0 4px 12px rgba(0,0,0,.2)); position: relative; z-index: 1; }
+    .hero h1 { font-size: 36px; font-weight: 900; letter-spacing: -2px; margin-bottom: 8px; position: relative; z-index: 1; }
+    .hero h1 span { color: #FEF3C7; }
+    .hero p { font-size: 15px; opacity: .92; line-height: 1.6; margin-bottom: 28px; position: relative; z-index: 1; }
+    .cta-btn { display: inline-flex; align-items: center; gap: 10px; background: var(--white); color: var(--brand-dark); border: none; padding: 16px 32px; border-radius: var(--r-full); font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,.2); transition: .2s; position: relative; z-index: 1; }
     .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0,0,0,.25); }
     .cta-btn:active { transform: translateY(0); }
 
-    .features { padding: 32px 24px; display: flex; flex-direction: column; gap: 20px; }
-    .feature-card {
-      display: flex; align-items: flex-start; gap: 16px;
-      background: var(--light); border-radius: var(--r);
-      padding: 18px 20px;
-    }
-    .feature-icon {
-      width: 48px; height: 48px; border-radius: 12px;
-      background: var(--brand-grad); display: flex; align-items: center;
-      justify-content: center; font-size: 22px; flex-shrink: 0;
-    }
+    .impact-bar { background: #FEF7ED; padding: 16px 24px; display: flex; gap: 12px; overflow-x: auto; border-bottom: 1px solid var(--border); }
+    .impact-bar::-webkit-scrollbar { display: none; }
+    .impact-item { flex-shrink: 0; background: var(--white); border-radius: var(--r); padding: 12px 16px; text-align: center; min-width: 100px; border: 1px solid var(--border); }
+    .impact-item .val { font-size: 20px; font-weight: 800; color: var(--brand-dark); }
+    .impact-item .lbl { font-size: 11px; color: var(--gray); margin-top: 2px; }
+
+    .features { padding: 28px 24px; display: flex; flex-direction: column; gap: 16px; }
+    .feature-card { display: flex; align-items: flex-start; gap: 14px; background: var(--white); border-radius: var(--r); padding: 18px 20px; border: 1px solid var(--border); }
+    .feature-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--brand-grad); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
     .feature-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
     .feature-card p { font-size: 13px; color: var(--gray); line-height: 1.4; }
 
+    .mission-box { background: linear-gradient(135deg, #ECFDF5, #D1FAE5); border-radius: var(--r); padding: 20px 24px; margin: 0 24px 24px; border: 1px solid #A7F3D0; }
+    .mission-box h3 { font-size: 15px; font-weight: 700; color: var(--accent-dark); margin-bottom: 6px; }
+    .mission-box p { font-size: 13px; color: var(--slate); line-height: 1.5; }
+
     .landing-cta { padding: 0 24px 40px; }
-    .btn-primary {
-      width: 100%; padding: 16px; border-radius: var(--r-full);
-      background: var(--brand-grad); border: none; color: white;
-      font-size: 17px; font-weight: 700; cursor: pointer;
-      transition: .2s; box-shadow: 0 6px 20px rgba(0,180,216,.35);
-    }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,180,216,.45); }
+    .btn-primary { width: 100%; padding: 16px; border-radius: var(--r-full); background: var(--brand-grad); border: none; color: white; font-size: 17px; font-weight: 700; cursor: pointer; transition: .2s; box-shadow: 0 6px 20px rgba(217,119,6,.35); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(217,119,6,.45); }
     .btn-primary:active { transform: translateY(0); }
-    .btn-accent {
-      width: 100%; padding: 16px; border-radius: var(--r-full);
-      background: var(--accent); border: none; color: white;
-      font-size: 17px; font-weight: 700; cursor: pointer;
-      transition: .2s; box-shadow: 0 6px 20px rgba(255,107,53,.35);
-    }
-    .btn-accent:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(255,107,53,.45); }
+    .btn-accent { width: 100%; padding: 16px; border-radius: var(--r-full); background: var(--accent); border: none; color: white; font-size: 17px; font-weight: 700; cursor: pointer; transition: .2s; box-shadow: 0 6px 20px rgba(5,150,105,.35); }
+    .btn-accent:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(5,150,105,.45); }
     .btn-accent:active { transform: translateY(0); }
-    .btn-outline {
-      width: 100%; padding: 14px; border-radius: var(--r-full);
-      background: transparent; border: 2px solid var(--border); color: var(--slate);
-      font-size: 16px; font-weight: 600; cursor: pointer; transition: .2s;
-    }
+    .btn-outline { width: 100%; padding: 14px; border-radius: var(--r-full); background: transparent; border: 2px solid var(--border); color: var(--slate); font-size: 16px; font-weight: 600; cursor: pointer; transition: .2s; }
     .btn-outline:hover { border-color: var(--brand); color: var(--brand-dark); }
 
-    /* ─── BOOKING STEPS ─── */
-    .step-indicator {
-      display: flex; align-items: center; justify-content: center;
-      gap: 8px; padding: 16px 24px;
-    }
-    .step-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--border); transition: .3s;
-    }
+    .step-indicator { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 16px 24px; }
+    .step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: .3s; }
     .step-dot.active { background: var(--brand); width: 24px; border-radius: 4px; }
     .step-dot.done { background: var(--success); }
-
     .step-content { flex: 1; padding: 0 24px 24px; overflow-y: auto; }
     .step-title { font-size: 24px; font-weight: 800; letter-spacing: -.5px; margin-bottom: 6px; }
     .step-subtitle { font-size: 14px; color: var(--gray); margin-bottom: 24px; line-height: 1.4; }
 
-    /* Address step */
+    .service-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .service-card { border: 2px solid var(--border); border-radius: var(--r); padding: 20px 12px; text-align: center; cursor: pointer; transition: .2s; background: var(--white); position: relative; }
+    .service-card:hover { border-color: var(--brand); background: var(--light); }
+    .service-card.selected { border-color: var(--brand); background: var(--light); }
+    .service-card.selected::after { content: '✓'; position: absolute; top: 8px; right: 10px; width: 20px; height: 20px; background: var(--brand); border-radius: 50%; color: white; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; line-height: 20px; }
+    .service-emoji { font-size: 36px; margin-bottom: 10px; }
+    .service-label { font-size: 13px; font-weight: 600; color: var(--slate); }
+    .service-desc { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.3; }
+
     .input-group { margin-bottom: 16px; }
     .input-group label { display: block; font-size: 13px; font-weight: 600; color: var(--slate); margin-bottom: 8px; }
-    .input-field {
-      width: 100%; padding: 14px 16px; border-radius: var(--r);
-      border: 2px solid var(--border); font-family: inherit;
-      font-size: 15px; color: var(--dark); transition: .2s;
-      background: var(--white);
-    }
-    .input-field:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(0,180,216,.12); }
+    .input-field { width: 100%; padding: 14px 16px; border-radius: var(--r); border: 2px solid var(--border); font-family: inherit; font-size: 15px; color: var(--dark); transition: .2s; background: var(--white); }
+    .input-field:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(217,119,6,.12); }
     .input-field::placeholder { color: var(--muted); }
 
-    .address-map {
-      width: 100%; height: 140px; border-radius: var(--r);
-      background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
-      display: flex; align-items: center; justify-content: center;
-      border: 2px solid var(--border); margin-bottom: 16px;
-      position: relative; overflow: hidden;
-    }
-    .map-grid {
-      position: absolute; inset: 0;
-      background-image:
-        linear-gradient(rgba(0,180,216,.08) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,180,216,.08) 1px, transparent 1px);
-      background-size: 30px 30px;
-    }
-    .map-pin { font-size: 40px; filter: drop-shadow(0 4px 8px rgba(0,0,0,.2)); position: relative; z-index: 1; }
-    .map-pulse {
-      position: absolute; width: 60px; height: 60px;
-      border-radius: 50%; background: rgba(0,180,216,.15);
-      animation: pulse 1.8s ease-out infinite;
-    }
-    @keyframes pulse {
-      0% { transform: scale(.5); opacity: 1; }
-      100% { transform: scale(2.5); opacity: 0; }
-    }
+    .worker-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+    .worker-card { border: 2px solid var(--border); border-radius: var(--r); padding: 16px; cursor: pointer; transition: .2s; background: var(--white); display: flex; gap: 14px; align-items: flex-start; }
+    .worker-card:hover { border-color: var(--brand); background: var(--light); }
+    .worker-card.selected { border-color: var(--brand); background: linear-gradient(135deg, #FEF3C7, #FDE68A); }
+    .worker-avatar { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; color: white; flex-shrink: 0; border: 3px solid rgba(255,255,255,.6); box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+    .worker-info { flex: 1; }
+    .worker-name { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+    .worker-meta { font-size: 12px; color: var(--gray); margin-bottom: 6px; }
+    .worker-story { font-size: 12px; color: var(--slate); line-height: 1.4; background: rgba(255,255,255,.6); padding: 8px 10px; border-radius: 8px; margin-bottom: 6px; }
+    .worker-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .worker-tag { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: var(--r-full); background: var(--white); color: var(--brand-dark); border: 1px solid var(--border); }
+    .worker-check { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 16px; transition: .2s; }
+    .worker-card.selected .worker-check { background: var(--brand); border-color: var(--brand); color: white; }
 
-    /* Rooms step */
-    .rooms-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 12px; margin-bottom: 16px;
-    }
-    .room-card {
-      border: 2px solid var(--border); border-radius: var(--r);
-      padding: 16px 12px; text-align: center; cursor: pointer;
-      transition: .2s; background: var(--white); position: relative;
-    }
-    .room-card:hover { border-color: var(--brand); background: var(--light); }
-    .room-card.selected { border-color: var(--brand); background: var(--light); }
-    .room-card.selected::after {
-      content: '✓';
-      position: absolute; top: 8px; right: 10px;
-      width: 20px; height: 20px; background: var(--brand);
-      border-radius: 50%; color: white; font-size: 11px; font-weight: 800;
-      display: flex; align-items: center; justify-content: center;
-      line-height: 20px;
-    }
-    .room-card.special { grid-column: span 2; background: linear-gradient(135deg, #FFF7F0, #FFF0E8); border-color: #FDBA74; }
-    .room-card.special.selected { border-color: var(--accent); background: linear-gradient(135deg, #FFF0E8, #FFE4D3); }
-    .room-emoji { font-size: 32px; margin-bottom: 8px; }
-    .room-label { font-size: 13px; font-weight: 600; color: var(--slate); }
-    .room-price { font-size: 11px; color: var(--muted); margin-top: 2px; }
-
-    /* Duration step */
-    .hours-display {
-      text-align: center; padding: 32px 0 24px;
-    }
-    .hours-value { font-size: 72px; font-weight: 900; color: var(--brand-dark); letter-spacing: -4px; line-height: 1; }
-    .hours-unit { font-size: 22px; color: var(--gray); font-weight: 500; }
-    .hours-controls {
-      display: flex; align-items: center; justify-content: center; gap: 24px;
-      margin-bottom: 32px;
-    }
-    .hour-btn {
-      width: 56px; height: 56px; border-radius: 50%;
-      border: 2px solid var(--border); background: var(--white);
-      font-size: 28px; cursor: pointer; display: flex; align-items: center;
-      justify-content: center; color: var(--slate); transition: .2s; font-weight: 300;
-    }
+    .hours-display { text-align: center; padding: 24px 0 20px; }
+    .hours-value { font-size: 64px; font-weight: 900; color: var(--brand-dark); letter-spacing: -4px; line-height: 1; }
+    .hours-unit { font-size: 20px; color: var(--gray); font-weight: 500; }
+    .hours-controls { display: flex; align-items: center; justify-content: center; gap: 24px; margin-bottom: 28px; }
+    .hour-btn { width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--border); background: var(--white); font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--slate); transition: .2s; font-weight: 300; }
     .hour-btn:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); background: var(--light); }
     .hour-btn:disabled { opacity: .3; cursor: not-allowed; }
-    .hour-slider {
-      -webkit-appearance: none; width: 100%; height: 6px;
-      border-radius: var(--r-full); background: var(--border);
-      outline: none; cursor: pointer; margin-bottom: 8px;
-    }
-    .hour-slider::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 22px; height: 22px;
-      border-radius: 50%; background: var(--brand-grad);
-      box-shadow: 0 2px 8px rgba(0,180,216,.4); cursor: pointer;
-    }
-    .hour-marks {
-      display: flex; justify-content: space-between;
-      font-size: 11px; color: var(--muted); padding: 0 2px;
-    }
+    .hour-slider { -webkit-appearance: none; width: 100%; height: 6px; border-radius: var(--r-full); background: var(--border); outline: none; cursor: pointer; margin-bottom: 8px; }
+    .hour-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--brand-grad); box-shadow: 0 2px 8px rgba(217,119,6,.4); cursor: pointer; }
+    .hour-marks { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); padding: 0 2px; }
 
-    .price-preview {
-      background: var(--light); border-radius: var(--r);
-      padding: 16px 20px; margin-top: 16px;
-    }
+    .price-preview { background: var(--light); border-radius: var(--r); padding: 16px 20px; margin-top: 16px; }
     .price-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 14px; color: var(--gray); }
     .price-row:last-child { margin-bottom: 0; font-size: 18px; font-weight: 800; color: var(--dark); border-top: 1px solid var(--border); padding-top: 10px; margin-top: 4px; }
     .price-row span:last-child { color: var(--brand-dark); }
     .price-row:last-child span:last-child { font-size: 22px; color: var(--accent); }
 
-    /* Summary step */
-    .summary-card {
-      background: var(--light); border-radius: var(--r);
-      padding: 20px; margin-bottom: 16px;
-    }
+    .summary-card { background: var(--light); border-radius: var(--r); padding: 20px; margin-bottom: 16px; }
     .summary-card h4 { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 14px; }
-    .summary-item {
-      display: flex; align-items: center; gap: 10px;
-      font-size: 14px; color: var(--slate); margin-bottom: 10px;
-    }
+    .summary-item { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--slate); margin-bottom: 10px; }
     .summary-item:last-child { margin-bottom: 0; }
     .summary-emoji { font-size: 18px; width: 28px; text-align: center; }
 
-    .total-box {
-      background: var(--brand-grad); border-radius: var(--r);
-      padding: 20px; text-align: center; color: white; margin-bottom: 20px;
-    }
+    .total-box { background: var(--brand-grad); border-radius: var(--r); padding: 20px; text-align: center; color: white; margin-bottom: 20px; }
     .total-box .total-label { font-size: 13px; opacity: .85; margin-bottom: 4px; }
     .total-box .total-amount { font-size: 42px; font-weight: 900; letter-spacing: -2px; }
     .total-box .total-note { font-size: 12px; opacity: .75; margin-top: 4px; }
 
-    /* ─── SEARCHING SCREEN ─── */
-    .searching-screen {
-      flex: 1; display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 40px 24px; text-align: center; position: relative;
-    }
-    .radar-container {
-      position: relative; width: 220px; height: 220px;
-      display: flex; align-items: center; justify-content: center; margin-bottom: 40px;
-    }
-    .radar-ring {
-      position: absolute; border-radius: 50%;
-      border: 2px solid var(--brand);
-      animation: radarExpand 2.4s ease-out infinite;
-    }
+    .searching-screen { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; text-align: center; position: relative; }
+    .radar-container { position: relative; width: 220px; height: 220px; display: flex; align-items: center; justify-content: center; margin-bottom: 40px; }
+    .radar-ring { position: absolute; border-radius: 50%; border: 2px solid var(--brand); animation: radarExpand 2.4s ease-out infinite; }
     .radar-ring:nth-child(1) { width: 60px; height: 60px; animation-delay: 0s; }
     .radar-ring:nth-child(2) { width: 110px; height: 110px; animation-delay: .6s; }
     .radar-ring:nth-child(3) { width: 165px; height: 165px; animation-delay: 1.2s; }
     .radar-ring:nth-child(4) { width: 220px; height: 220px; animation-delay: 1.8s; }
-    @keyframes radarExpand {
-      0% { transform: scale(.3); opacity: .9; }
-      100% { transform: scale(1.1); opacity: 0; }
-    }
-    .radar-center {
-      width: 70px; height: 70px; border-radius: 50%;
-      background: var(--brand-grad); display: flex; align-items: center;
-      justify-content: center; font-size: 32px; position: relative; z-index: 1;
-      box-shadow: 0 8px 24px rgba(0,180,216,.4);
-    }
+    @keyframes radarExpand { 0% { transform: scale(.3); opacity: .9; } 100% { transform: scale(1.1); opacity: 0; } }
+    .radar-center { width: 70px; height: 70px; border-radius: 50%; background: var(--brand-grad); display: flex; align-items: center; justify-content: center; font-size: 32px; position: relative; z-index: 1; box-shadow: 0 8px 24px rgba(217,119,6,.4); }
     .search-title { font-size: 24px; font-weight: 800; letter-spacing: -.5px; margin-bottom: 8px; }
     .search-subtitle { font-size: 14px; color: var(--gray); line-height: 1.5; margin-bottom: 32px; }
-    .cleaners-nearby {
-      display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
-    }
-    .cleaner-ping {
-      display: flex; align-items: center; gap: 8px;
-      background: var(--light); border-radius: var(--r-full);
-      padding: 8px 14px; font-size: 13px;
-      animation: floatIn .4s ease;
-    }
-    @keyframes floatIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .cleaner-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
-    .cancel-small {
-      margin-top: 24px; background: none; border: none; color: var(--muted);
-      font-size: 14px; cursor: pointer; text-decoration: underline; padding: 8px;
-    }
+    .search-impact { background: var(--light); border-radius: var(--r); padding: 16px 20px; margin-bottom: 24px; text-align: center; }
+    .search-impact p { font-size: 13px; color: var(--slate); line-height: 1.5; }
+    .search-impact strong { color: var(--brand-dark); }
+    .cancel-small { margin-top: 24px; background: none; border: none; color: var(--muted); font-size: 14px; cursor: pointer; text-decoration: underline; padding: 8px; }
 
-    /* ─── MATCH SCREEN ─── */
-    .match-hero {
-      background: var(--brand-grad); padding: 32px 24px 48px;
-      text-align: center; color: white; position: relative;
-    }
-    .match-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(255,255,255,.2); border-radius: var(--r-full);
-      padding: 6px 14px; font-size: 13px; font-weight: 600; margin-bottom: 20px;
-    }
+    .match-hero { background: var(--brand-grad); padding: 32px 24px 48px; text-align: center; color: white; position: relative; }
+    .match-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,.2); border-radius: var(--r-full); padding: 6px 14px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
     .match-badge-dot { width: 8px; height: 8px; border-radius: 50%; background: #A7F3D0; animation: blink 1.2s infinite; }
     @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
-    .avatar {
-      width: 90px; height: 90px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 36px; font-weight: 800; color: white;
-      border: 4px solid rgba(255,255,255,.6);
-      margin: 0 auto 16px;
-      box-shadow: 0 8px 24px rgba(0,0,0,.2);
-    }
+    .avatar { width: 90px; height: 90px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 800; color: white; border: 4px solid rgba(255,255,255,.6); margin: 0 auto 16px; box-shadow: 0 8px 24px rgba(0,0,0,.2); }
     .match-name { font-size: 26px; font-weight: 800; margin-bottom: 4px; }
+    .match-origin { font-size: 13px; opacity: .9; margin-bottom: 8px; }
     .stars { color: #FDE68A; font-size: 16px; }
     .rating-text { font-size: 13px; opacity: .85; }
 
-    .match-card {
-      background: var(--white); border-radius: 24px 24px 0 0;
-      margin-top: -20px; padding: 28px 24px; flex: 1;
-    }
-    .eta-row {
-      display: flex; gap: 12px; margin-bottom: 24px;
-    }
-    .eta-badge {
-      flex: 1; background: var(--light); border-radius: var(--r);
-      padding: 16px; text-align: center;
-    }
+    .match-card { background: var(--white); border-radius: 24px 24px 0 0; margin-top: -20px; padding: 28px 24px; flex: 1; }
+    .worker-bio { background: linear-gradient(135deg, #FEF3C7, #FDE68A); border-radius: var(--r); padding: 16px; margin-bottom: 20px; font-size: 13px; color: var(--slate); line-height: 1.6; }
+    .worker-bio strong { color: var(--brand-dark); }
+    .eta-row { display: flex; gap: 12px; margin-bottom: 24px; }
+    .eta-badge { flex: 1; background: var(--light); border-radius: var(--r); padding: 16px; text-align: center; }
     .eta-badge .val { font-size: 26px; font-weight: 800; color: var(--brand-dark); }
     .eta-badge .lbl { font-size: 12px; color: var(--gray); margin-top: 2px; }
 
-    .mini-map {
-      width: 100%; height: 160px; border-radius: var(--r);
-      background: linear-gradient(135deg, #DBEAFE, #EFF6FF);
-      position: relative; overflow: hidden; margin-bottom: 20px;
-    }
-    .mini-map .map-grid { background-size: 24px 24px; }
-    .route-line {
-      position: absolute; bottom: 30px; left: 20px;
-      width: calc(100% - 40px); height: 3px;
-      background: linear-gradient(90deg, var(--brand), var(--accent));
-      border-radius: var(--r-full);
-    }
-    .route-line::before {
-      content: '🚗'; position: absolute; top: -14px;
-      animation: driveCar 3s ease-in-out infinite alternate;
-      font-size: 20px;
-    }
-    @keyframes driveCar {
-      from { left: -5px; }
-      to   { left: calc(100% - 20px); }
-    }
+    .mini-map { width: 100%; height: 160px; border-radius: var(--r); background: linear-gradient(135deg, #FEF3C7, #FDE68A); position: relative; overflow: hidden; margin-bottom: 20px; }
+    .mini-map .map-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(217,119,6,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(217,119,6,.08) 1px, transparent 1px); background-size: 24px 24px; }
+    .route-line { position: absolute; bottom: 30px; left: 20px; width: calc(100% - 40px); height: 3px; background: linear-gradient(90deg, var(--brand), var(--accent)); border-radius: var(--r-full); }
+    .route-line::before { content: '🚲'; position: absolute; top: -14px; animation: driveCar 3s ease-in-out infinite alternate; font-size: 20px; }
+    @keyframes driveCar { from { left: -5px; } to { left: calc(100% - 20px); } }
     .route-start { position: absolute; bottom: 14px; left: 16px; font-size: 20px; }
     .route-end   { position: absolute; bottom: 14px; right: 16px; font-size: 20px; }
 
     .match-actions { display: flex; gap: 12px; margin-bottom: 16px; }
-    .action-btn {
-      flex: 1; padding: 14px; border-radius: var(--r);
-      border: 2px solid var(--border); background: var(--white);
-      font-size: 14px; font-weight: 600; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      transition: .2s; color: var(--slate);
-    }
+    .action-btn { flex: 1; padding: 14px; border-radius: var(--r); border: 2px solid var(--border); background: var(--white); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: .2s; color: var(--slate); }
     .action-btn:hover { border-color: var(--brand); color: var(--brand); background: var(--light); }
     .action-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
 
-    /* ─── TRACKING SCREEN ─── */
-    .tracking-map {
-      width: 100%; height: 260px;
-      background: linear-gradient(135deg, #DBEAFE, #EFF6FF);
-      position: relative; overflow: hidden;
-    }
-    .tracking-map .map-grid { background-size: 28px 28px; }
+    .tracking-map { width: 100%; height: 260px; background: linear-gradient(135deg, #FEF3C7, #FDE68A); position: relative; overflow: hidden; }
+    .tracking-map .map-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(217,119,6,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(217,119,6,.08) 1px, transparent 1px); background-size: 28px 28px; }
+    .road-h { position: absolute; height: 6px; background: rgba(255,255,255,.7); border-radius: var(--r-full); }
+    .road-v { position: absolute; width: 6px; background: rgba(255,255,255,.7); border-radius: var(--r-full); }
+    .car-marker { position: absolute; font-size: 28px; animation: trackCar 6s ease-in-out infinite alternate; filter: drop-shadow(0 2px 4px rgba(0,0,0,.2)); transform: translateX(-50%); }
+    @keyframes trackCar { 0% { left: 15%; top: 60%; } 25% { left: 35%; top: 55%; } 50% { left: 55%; top: 45%; } 75% { left: 72%; top: 40%; } 100% { left: 82%; top: 35%; } }
+    .home-marker { position: absolute; right: 10%; top: 25%; font-size: 32px; filter: drop-shadow(0 2px 6px rgba(0,0,0,.2)); }
 
-    .road-h {
-      position: absolute; height: 6px; background: rgba(255,255,255,.7);
-      border-radius: var(--r-full);
-    }
-    .road-v {
-      position: absolute; width: 6px; background: rgba(255,255,255,.7);
-      border-radius: var(--r-full);
-    }
-
-    .car-marker {
-      position: absolute; font-size: 28px;
-      animation: trackCar 6s ease-in-out infinite alternate;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,.2));
-      transform: translateX(-50%);
-    }
-    @keyframes trackCar {
-      0%   { left: 15%; top: 60%; }
-      25%  { left: 35%; top: 55%; }
-      50%  { left: 55%; top: 45%; }
-      75%  { left: 72%; top: 40%; }
-      100% { left: 82%; top: 35%; }
-    }
-    .home-marker {
-      position: absolute; right: 10%; top: 25%; font-size: 32px;
-      filter: drop-shadow(0 2px 6px rgba(0,0,0,.2));
-    }
-
-    .progress-steps {
-      padding: 24px;
-    }
-    .progress-step {
-      display: flex; align-items: flex-start; gap: 16px; margin-bottom: 24px;
-      position: relative;
-    }
-    .progress-step:not(:last-child)::after {
-      content: ''; position: absolute;
-      left: 19px; top: 40px; width: 2px;
-      height: calc(100% - 8px);
-      background: var(--border);
-    }
+    .progress-steps { padding: 24px; }
+    .progress-step { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 24px; position: relative; }
+    .progress-step:not(:last-child)::after { content: ''; position: absolute; left: 19px; top: 40px; width: 2px; height: calc(100% - 8px); background: var(--border); }
     .progress-step.done::after { background: var(--success); }
     .progress-step.active::after { background: linear-gradient(var(--brand), var(--border)); }
-
-    .step-icon {
-      width: 40px; height: 40px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px; flex-shrink: 0; border: 2px solid var(--border);
-      background: var(--white);
-    }
+    .step-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; border: 2px solid var(--border); background: var(--white); }
     .progress-step.done .step-icon { background: var(--success); border-color: var(--success); color: white; font-size: 16px; }
     .progress-step.active .step-icon { background: var(--brand-grad); border-color: transparent; color: white; animation: stepPulse 1.5s infinite; }
-    @keyframes stepPulse {
-      0%,100% { box-shadow: 0 0 0 0 rgba(0,180,216,.4); }
-      50% { box-shadow: 0 0 0 8px rgba(0,180,216,0); }
-    }
+    @keyframes stepPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(217,119,6,.4); } 50% { box-shadow: 0 0 0 8px rgba(217,119,6,0); } }
     .step-info h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
     .step-info p { font-size: 13px; color: var(--gray); line-height: 1.4; }
 
-    /* ─── DONE SCREEN ─── */
-    .done-screen {
-      flex: 1; display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 40px 24px; text-align: center;
-    }
-    .checkmark-circle {
-      width: 100px; height: 100px; border-radius: 50%;
-      background: linear-gradient(135deg, #10B981, #059669);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 48px; margin-bottom: 24px;
-      animation: popIn .5s cubic-bezier(.68, -.55, .27, 1.55);
-      box-shadow: 0 12px 32px rgba(16,185,129,.35);
-    }
-    @keyframes popIn {
-      from { transform: scale(0); opacity: 0; }
-      to   { transform: scale(1); opacity: 1; }
-    }
+    .done-screen { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; text-align: center; }
+    .checkmark-circle { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #059669, #047857); display: flex; align-items: center; justify-content: center; font-size: 48px; margin-bottom: 24px; animation: popIn .5s cubic-bezier(.68, -.55, .27, 1.55); box-shadow: 0 12px 32px rgba(5,150,105,.35); }
+    @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     .done-title { font-size: 28px; font-weight: 900; margin-bottom: 8px; }
     .done-subtitle { font-size: 15px; color: var(--gray); margin-bottom: 32px; line-height: 1.5; }
 
-    .rating-card {
-      background: var(--light); border-radius: var(--r-lg);
-      padding: 24px; width: 100%; margin-bottom: 28px; text-align: center;
-    }
+    .impact-receipt { background: linear-gradient(135deg, #ECFDF5, #D1FAE5); border-radius: var(--r); padding: 16px 20px; width: 100%; margin-bottom: 20px; text-align: center; border: 1px solid #A7F3D0; }
+    .impact-receipt h4 { font-size: 13px; font-weight: 700; color: var(--accent-dark); margin-bottom: 8px; }
+    .impact-receipt p { font-size: 13px; color: var(--slate); line-height: 1.5; }
+
+    .rating-card { background: var(--light); border-radius: var(--r-lg); padding: 24px; width: 100%; margin-bottom: 28px; text-align: center; }
     .rating-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
     .stars-rate { display: flex; justify-content: center; gap: 10px; margin-bottom: 12px; }
-    .star-btn {
-      font-size: 36px; cursor: pointer; transition: .15s;
-      filter: grayscale(1) opacity(.4);
-    }
+    .star-btn { font-size: 36px; cursor: pointer; transition: .15s; filter: grayscale(1) opacity(.4); }
     .star-btn.lit { filter: none; }
     .star-btn:hover { transform: scale(1.15); }
 
-    .receipt-row {
-      display: flex; justify-content: space-between;
-      font-size: 14px; color: var(--gray); padding: 6px 0;
-      border-bottom: 1px solid var(--border);
-    }
+    .receipt-row { display: flex; justify-content: space-between; font-size: 14px; color: var(--gray); padding: 6px 0; border-bottom: 1px solid var(--border); }
     .receipt-row:last-child { border-bottom: none; font-weight: 700; color: var(--dark); font-size: 16px; }
 
-    /* ─── CLEANER SIDE ─── */
-    .cleaner-link {
-      text-align: center; padding: 16px 24px 32px;
-      font-size: 13px; color: var(--muted);
-    }
-    .cleaner-link a {
-      color: var(--brand-dark); font-weight: 600; text-decoration: none;
-    }
+    .cleaner-link { text-align: center; padding: 16px 24px 32px; font-size: 13px; color: var(--muted); }
+    .cleaner-link a { color: var(--brand-dark); font-weight: 600; text-decoration: none; }
     .cleaner-link a:hover { text-decoration: underline; }
 
-    /* Utility */
     .mt-12 { margin-top: 12px; }
     .mt-16 { margin-top: 16px; }
     .text-center { text-align: center; }
     .mb-0 { margin-bottom: 0 !important; }
 
-    /* ─── LANG SWITCHER ─── */
-    #lang-sw {
-      position: fixed; top: 10px; right: 10px; z-index: 1000;
-      display: flex; gap: 4px;
-    }
-    #lang-sw button {
-      padding: 5px 12px; border-radius: var(--r-full);
-      border: 2px solid var(--brand); background: white;
-      color: var(--brand-dark); font-size: 12px; font-weight: 700;
-      cursor: pointer; font-family: inherit; transition: .2s;
-    }
+    #lang-sw { position: fixed; top: 10px; right: 10px; z-index: 1000; display: flex; gap: 4px; }
+    #lang-sw button { padding: 5px 12px; border-radius: var(--r-full); border: 2px solid var(--brand); background: white; color: var(--brand-dark); font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; transition: .2s; }
     #lang-sw button.active { background: var(--brand); color: white; }
 
-    /* ─── REAL MAP ─── */
-    #map { width:100%; height:200px; border-radius:var(--r); overflow:hidden; border:2px solid var(--border); margin-bottom:12px; background:#E8F1FB; z-index:0; }
+    #map { width:100%; height:200px; border-radius:var(--r); overflow:hidden; border:2px solid var(--border); margin-bottom:12px; background:#FEF7ED; z-index:0; }
     .map-toolbar { display:flex; gap:10px; margin-bottom:10px; }
     .geo-btn { flex:1; display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:10px 12px; border-radius:var(--r); border:2px solid var(--border); background:var(--white); color:var(--slate); font-size:13px; font-weight:600; cursor:pointer; transition:.2s; font-family:inherit; }
     .geo-btn:hover { border-color:var(--brand); color:var(--brand-dark); background:var(--light); }
@@ -575,13 +241,12 @@
     .leaflet-container { font-family:inherit !important; }
     .pin-emoji { font-size:30px; line-height:30px; text-align:center; cursor:grab; filter:drop-shadow(0 3px 4px rgba(0,0,0,.3)); }
 
-    /* ─── PAYMENT ─── */
     .pay-section { margin-bottom:18px; }
     .pay-h { font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:14px; }
     .pay-methods { display:flex; gap:10px; margin-bottom:16px; }
     .pay-method { flex:1; border:2px solid var(--border); border-radius:var(--r); padding:12px 6px; background:var(--white); cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:8px; transition:.2s; font-family:inherit; min-height:64px; justify-content:center; }
     .pay-method:hover { border-color:var(--brand); }
-    .pay-method.active { border-color:var(--brand); background:var(--light); box-shadow:0 0 0 3px rgba(0,180,216,.12); }
+    .pay-method.active { border-color:var(--brand); background:var(--light); box-shadow:0 0 0 3px rgba(217,119,6,.12); }
     .pm-icons { display:flex; align-items:center; gap:5px; height:20px; }
     .pm-label { font-size:11px; font-weight:600; color:var(--slate); }
     .card-form { border:2px solid var(--border); border-radius:var(--r); padding:16px; background:var(--white); }
@@ -589,7 +254,7 @@
     .card-field label { display:block; font-size:12px; font-weight:600; color:var(--slate); margin-bottom:6px; }
     .card-input-wrap { position:relative; }
     .card-input { width:100%; padding:12px 14px; border:2px solid var(--border); border-radius:10px; font-family:inherit; font-size:15px; color:var(--dark); letter-spacing:.4px; transition:.2s; background:var(--white); }
-    .card-input:focus { outline:none; border-color:var(--brand); box-shadow:0 0 0 3px rgba(0,180,216,.12); }
+    .card-input:focus { outline:none; border-color:var(--brand); box-shadow:0 0 0 3px rgba(217,119,6,.12); }
     .card-input::placeholder { color:var(--muted); letter-spacing:normal; }
     .card-row { display:flex; gap:12px; }
     .card-row > .card-field { flex:1; }
@@ -604,6 +269,10 @@
     .wallet-hint { font-size:12px; color:var(--muted); text-align:center; margin-top:10px; }
     .pay-secure { display:flex; align-items:center; justify-content:center; gap:6px; font-size:12px; color:var(--gray); margin-top:14px; }
     .stripe-badge { display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--muted); margin-top:4px; font-weight:600; letter-spacing:.3px; }
+
+    .fair-wage { background: linear-gradient(135deg, #ECFDF5, #D1FAE5); border-radius: var(--r); padding: 14px 16px; margin-bottom: 16px; border: 1px solid #A7F3D0; }
+    .fair-wage p { font-size: 12px; color: var(--slate); line-height: 1.5; }
+    .fair-wage strong { color: var(--accent-dark); }
   </style>
 </head>
 <body>
@@ -613,56 +282,77 @@
 </div>
 <div id="app">
 
-  <!-- ══════════════════════════════════════════
-       SCREEN 0 — LANDING
-  ══════════════════════════════════════════ -->
+  <!-- SCREEN 0 — LANDING -->
   <div class="screen active" id="screen-home">
     <div class="hero">
-      <div class="hero-icon">🫧</div>
-      <h1>Lava<span>GO</span></h1>
-      <p data-i18n="hero.tagline">Le nettoyage à domicile en quelques clics.<br>Un pro chez vous en moins de 30 minutes.</p>
-      <button class="cta-btn" onclick="goTo('screen-booking')" data-i18n="hero.cta">✨ Réserver maintenant</button>
+      <div class="hero-badge" data-i18n="hero.badge">🤝 Plateforme solidaire</div>
+      <div class="hero-icon">🌎</div>
+      <h1>Mu<span>tua</span></h1>
+      <p data-i18n="hero.tagline">Un coup de main solidaire au quotidien.<br>Donnez du travail à une personne qui en a besoin.</p>
+      <button class="cta-btn" onclick="goTo('screen-booking')" data-i18n="hero.cta">🤲 Demander un service</button>
+    </div>
+
+    <div class="impact-bar">
+      <div class="impact-item">
+        <div class="val">1 247</div>
+        <div class="lbl" data-i18n="impact.families">familles aidées</div>
+      </div>
+      <div class="impact-item">
+        <div class="val">89%</div>
+        <div class="lbl" data-i18n="impact.women">femmes</div>
+      </div>
+      <div class="impact-item">
+        <div class="val">18€</div>
+        <div class="lbl" data-i18n="impact.wage">/heure versé</div>
+      </div>
+      <div class="impact-item">
+        <div class="val">0%</div>
+        <div class="lbl" data-i18n="impact.commission">commission</div>
+      </div>
     </div>
 
     <div class="features">
       <div class="feature-card">
-        <div class="feature-icon">⚡</div>
+        <div class="feature-icon">🧹</div>
         <div>
-          <h3 data-i18n="feat1.title">Rapide comme Uber</h3>
-          <p data-i18n="feat1.desc">Un nettoyeur disponible est dispatché en temps réel près de chez vous.</p>
+          <h3 data-i18n="feat1.title">Ménage & repassage</h3>
+          <p data-i18n="feat1.desc">Un coup de main pour garder votre maison impeccable.</p>
         </div>
       </div>
       <div class="feature-card">
-        <div class="feature-icon">🛡️</div>
+        <div class="feature-icon">🌿</div>
         <div>
-          <h3 data-i18n="feat2.title">Pros vérifiés</h3>
-          <p data-i18n="feat2.desc">Tous nos nettoyeurs sont assurés, formés et évalués par la communauté.</p>
+          <h3 data-i18n="feat2.title">Jardinage & récoltes</h3>
+          <p data-i18n="feat2.desc">Aide pour votre jardin, vos plantations et vos récoltes.</p>
         </div>
       </div>
       <div class="feature-card">
-        <div class="feature-icon">💳</div>
+        <div class="feature-icon">🛒</div>
         <div>
-          <h3 data-i18n="feat3.title">Paiement simple</h3>
-          <p data-i18n="feat3.desc">Payez en ligne ou en espèces. Prix transparent dès la réservation.</p>
+          <h3 data-i18n="feat3.title">Courses & accompagnement</h3>
+          <p data-i18n="feat3.desc">Faire les courses, accompagner, aider au quotidien.</p>
         </div>
       </div>
     </div>
 
+    <div class="mission-box">
+      <h3 data-i18n="mission.title">Notre mission</h3>
+      <p data-i18n="mission.text">Mutua met en relation des familles avec des travailleuses sud-américaines qui cherchent un emploi digne. 100% du tarif horaire est versé a la travailleuse. Pas de commission, pas d'intermediaire opaque.</p>
+    </div>
+
     <div class="landing-cta">
-      <button class="btn-primary" onclick="goTo('screen-booking')" data-i18n="landing.start">Commencer</button>
+      <button class="btn-primary" onclick="goTo('screen-booking')" data-i18n="landing.start">Demander un service</button>
       <div style="text-align:center;margin-top:14px;">
-        <a href="cleaner.html" style="font-size:13px;color:var(--gray);text-decoration:none;" data-i18n="landing.cleanerLink">Vous êtes nettoyeur ? <span style="color:var(--brand-dark);font-weight:600;">Rejoignez-nous →</span></a>
+        <a href="worker.html" style="font-size:13px;color:var(--gray);text-decoration:none;" data-i18n="landing.workerLink">Vous cherchez du travail ? <span style="color:var(--brand-dark);font-weight:600;">Rejoignez Mutua →</span></a>
       </div>
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════
-       SCREEN 1 — BOOKING (multi-step)
-  ══════════════════════════════════════════ -->
+  <!-- SCREEN 1 — BOOKING -->
   <div class="screen" id="screen-booking">
     <div class="header">
       <button class="back-btn" onclick="goBack()">←</button>
-      <span class="logo">Lava<span>GO</span></span>
+      <span class="logo">Mu<span>tua</span></span>
       <div style="width:36px"></div>
     </div>
 
@@ -671,95 +361,126 @@
       <div class="step-dot" id="dot-2"></div>
       <div class="step-dot" id="dot-3"></div>
       <div class="step-dot" id="dot-4"></div>
+      <div class="step-dot" id="dot-5"></div>
     </div>
 
-    <!-- STEP 1 : Adresse -->
+    <!-- STEP 1 : Service type -->
     <div class="step-content" id="step-1">
-      <h2 class="step-title" data-i18n="s1.title">Votre adresse</h2>
-      <p class="step-subtitle" data-i18n="s1.sub">Où devons-nous envoyer votre nettoyeur ?</p>
+      <h2 class="step-title" data-i18n="s1.title">Quel service ?</h2>
+      <p class="step-subtitle" data-i18n="s1.sub">Choisissez le type d'aide dont vous avez besoin.</p>
+
+      <div class="service-grid" id="service-grid">
+        <div class="service-card" data-service="menage" onclick="toggleService(this)">
+          <div class="service-emoji">🧹</div>
+          <div class="service-label" data-i18n="svc.menage">Ménage</div>
+          <div class="service-desc" data-i18n="svc.menage.desc">Nettoyage complet</div>
+        </div>
+        <div class="service-card" data-service="repassage" onclick="toggleService(this)">
+          <div class="service-emoji">👔</div>
+          <div class="service-label" data-i18n="svc.repassage">Repassage</div>
+          <div class="service-desc" data-i18n="svc.repassage.desc">Linge et repassage</div>
+        </div>
+        <div class="service-card" data-service="jardinage" onclick="toggleService(this)">
+          <div class="service-emoji">🌿</div>
+          <div class="service-label" data-i18n="svc.jardinage">Jardinage</div>
+          <div class="service-desc" data-i18n="svc.jardinage.desc">Tonte, taille, arrosage</div>
+        </div>
+        <div class="service-card" data-service="recolte" onclick="toggleService(this)">
+          <div class="service-emoji">🍎</div>
+          <div class="service-label" data-i18n="svc.recolte">Récoltes</div>
+          <div class="service-desc" data-i18n="svc.recolte.desc">Cueillette, ramassage</div>
+        </div>
+        <div class="service-card" data-service="courses" onclick="toggleService(this)">
+          <div class="service-emoji">🛒</div>
+          <div class="service-label" data-i18n="svc.courses">Courses</div>
+          <div class="service-desc" data-i18n="svc.courses.desc">Faire les courses</div>
+        </div>
+        <div class="service-card" data-service="accompagnement" onclick="toggleService(this)">
+          <div class="service-emoji">🤝</div>
+          <div class="service-label" data-i18n="svc.accompagnement">Accompagnement</div>
+          <div class="service-desc" data-i18n="svc.accompagnement.desc">Aide au quotidien</div>
+        </div>
+        <div class="service-card" data-service="vitres" onclick="toggleService(this)">
+          <div class="service-emoji">🪟</div>
+          <div class="service-label" data-i18n="svc.vitres">Vitres</div>
+          <div class="service-desc" data-i18n="svc.vitres.desc">Nettoyage des vitres</div>
+        </div>
+        <div class="service-card" data-service="linge" onclick="toggleService(this)">
+          <div class="service-emoji">🧺</div>
+          <div class="service-label" data-i18n="svc.linge">Linge</div>
+          <div class="service-desc" data-i18n="svc.linge.desc">Tri, lavage, pliage</div>
+        </div>
+        <div class="service-card" data-service="cuisine" onclick="toggleService(this)">
+          <div class="service-emoji">🍲</div>
+          <div class="service-label" data-i18n="svc.cuisine">Cuisine simple</div>
+          <div class="service-desc" data-i18n="svc.cuisine.desc">Repas maison du quotidien</div>
+        </div>
+        <div class="service-card" data-service="gardeenfant" onclick="toggleService(this)">
+          <div class="service-emoji">🧸</div>
+          <div class="service-label" data-i18n="svc.gardeenfant">Garde d'enfants</div>
+          <div class="service-desc" data-i18n="svc.gardeenfant.desc">Sortie d'ecole et garde</div>
+        </div>
+      </div>
+
+      <p id="service-error" data-i18n="s1.error" style="color:var(--danger);font-size:13px;display:none;margin-bottom:12px;">⚠️ Veuillez sélectionner au moins un service.</p>
+      <button class="btn-primary" onclick="nextStep(1)" data-i18n="next">Continuer →</button>
+    </div>
+
+    <!-- STEP 2 : Adresse -->
+    <div class="step-content" id="step-2" style="display:none">
+      <h2 class="step-title" data-i18n="s2.title">Votre adresse</h2>
+      <p class="step-subtitle" data-i18n="s2.sub">Où devons-nous envoyer votre travailleuse ?</p>
 
       <div id="map"></div>
       <div class="map-toolbar">
         <button type="button" class="geo-btn" onclick="useMyLocation()" data-i18n="map.useLocation">📍 Ma position</button>
         <button type="button" class="geo-btn" onclick="geocodeAddress()" data-i18n="map.locate">🔍 Localiser</button>
       </div>
-      <p class="map-hint" data-i18n="map.hint">Glissez le repère sur la carte ou saisissez votre adresse.</p>
+      <p class="map-hint" data-i18n="map.hint">Glissez le repere sur la carte ou saisissez votre adresse.</p>
 
       <div class="input-group">
-        <label data-i18n="s1.street">Rue et numéro</label>
+        <label data-i18n="s2.street">Rue et numero</label>
         <input class="input-field" id="addr-street" type="text" placeholder="ex: 14 rue de la Paix" />
       </div>
       <div class="input-group" style="display:flex;gap:12px;">
         <div style="flex:1">
-          <label data-i18n="s1.zip">Code postal</label>
+          <label data-i18n="s2.zip">Code postal</label>
           <input class="input-field" id="addr-zip" type="text" placeholder="75001" maxlength="5" />
         </div>
         <div style="flex:2">
-          <label data-i18n="s1.city">Ville</label>
+          <label data-i18n="s2.city">Ville</label>
           <input class="input-field" id="addr-city" type="text" placeholder="Paris" />
         </div>
       </div>
       <div class="input-group">
-        <label data-i18n="s1.extra">Complément (optionnel)</label>
-        <input class="input-field" id="addr-extra" type="text" placeholder="Bât. B, 3ème étage, code: 1234" />
+        <label data-i18n="s2.extra">Complement (optionnel)</label>
+        <input class="input-field" id="addr-extra" type="text" placeholder="Bat. B, 3eme etage, code: 1234" />
       </div>
 
       <div class="mt-16">
-        <button class="btn-primary" onclick="nextStep(1)" data-i18n="next">Continuer →</button>
+        <button class="btn-primary" onclick="nextStep(2)" data-i18n="next">Continuer →</button>
       </div>
     </div>
 
-    <!-- STEP 2 : Pièces -->
-    <div class="step-content" id="step-2" style="display:none">
-      <h2 class="step-title" data-i18n="s2.title">Pièces à nettoyer</h2>
-      <p class="step-subtitle" data-i18n="s2.sub">Sélectionnez les espaces concernés (plusieurs choix possibles).</p>
-
-      <div class="rooms-grid" id="rooms-grid">
-        <div class="room-card" data-room="cuisine" data-price="5" onclick="toggleRoom(this)">
-          <div class="room-emoji">🍳</div>
-          <div class="room-label" data-i18n="room.cuisine">Cuisine</div>
-          <div class="room-price">+5 €</div>
-        </div>
-        <div class="room-card" data-room="chambre" data-price="3" onclick="toggleRoom(this)">
-          <div class="room-emoji">🛏️</div>
-          <div class="room-label" data-i18n="room.chambre">Chambre</div>
-          <div class="room-price">+3 €</div>
-        </div>
-        <div class="room-card" data-room="salle_bain" data-price="5" onclick="toggleRoom(this)">
-          <div class="room-emoji">🚿</div>
-          <div class="room-label" data-i18n="room.salle_bain">Salle de bain</div>
-          <div class="room-price">+5 €</div>
-        </div>
-        <div class="room-card" data-room="salon" data-price="3" onclick="toggleRoom(this)">
-          <div class="room-emoji">🛋️</div>
-          <div class="room-label" data-i18n="room.salon">Salon / Séjour</div>
-          <div class="room-price">+3 €</div>
-        </div>
-        <div class="room-card" data-room="bureau" data-price="3" onclick="toggleRoom(this)">
-          <div class="room-emoji">💼</div>
-          <div class="room-label" data-i18n="room.bureau">Bureau</div>
-          <div class="room-price">+3 €</div>
-        </div>
-        <div class="room-card" data-room="entree" data-price="2" onclick="toggleRoom(this)">
-          <div class="room-emoji">🚪</div>
-          <div class="room-label" data-i18n="room.entree">Entrée / Couloir</div>
-          <div class="room-price">+2 €</div>
-        </div>
-        <div class="room-card special" data-room="complet" data-price="0" data-special="true" onclick="toggleRoom(this)">
-          <div class="room-emoji">✨</div>
-          <div class="room-label" data-i18n="room.complet" style="font-weight:700;color:var(--accent)">Nettoyage Complet</div>
-          <div class="room-price" data-i18n="room.complet.desc" style="color:var(--accent-dark)">Toutes les pièces incluses — 15% de remise</div>
-        </div>
-      </div>
-
-      <p id="rooms-error" data-i18n="s2.error" style="color:var(--danger);font-size:13px;display:none;margin-bottom:12px;">⚠️ Veuillez sélectionner au moins une pièce.</p>
-      <button class="btn-primary" onclick="nextStep(2)" data-i18n="next">Continuer →</button>
-    </div>
-
-    <!-- STEP 3 : Durée -->
+    <!-- STEP 3 : Choisir sa travailleuse -->
     <div class="step-content" id="step-3" style="display:none">
-      <h2 class="step-title" data-i18n="s3.title">Durée du service</h2>
-      <p class="step-subtitle" data-i18n="s3.sub">Combien d'heures souhaitez-vous réserver ?</p>
+      <h2 class="step-title" data-i18n="s3.title">Choisir sa travailleuse</h2>
+      <p class="step-subtitle" data-i18n="s3.sub">Decouvrez les profils disponibles pres de chez vous. Chaque reservation = un emploi digne.</p>
+
+      <div class="fair-wage">
+        <p data-i18n="fair.wage"><strong>💚 Tarif equitable :</strong> 18€/h verses directement a la travailleuse. Mutua ne prend aucune commission.</p>
+      </div>
+
+      <div class="worker-list" id="worker-list"></div>
+
+      <p id="worker-error" data-i18n="s3.error" style="color:var(--danger);font-size:13px;display:none;margin-bottom:12px;">⚠️ Veuillez choisir une travailleuse.</p>
+      <button class="btn-primary" onclick="nextStep(3)" data-i18n="next">Continuer →</button>
+    </div>
+
+    <!-- STEP 4 : Durée -->
+    <div class="step-content" id="step-4" style="display:none">
+      <h2 class="step-title" data-i18n="s4.title">Duree du service</h2>
+      <p class="step-subtitle" data-i18n="s4.sub">Combien d'heures souhaitez-vous reserver ? Chaque heure compte.</p>
 
       <div class="hours-display">
         <div>
@@ -769,8 +490,7 @@
       </div>
       <div class="hours-controls">
         <button class="hour-btn" id="btn-minus" onclick="changeHours(-1)">−</button>
-        <input type="range" class="hour-slider" id="hours-slider" min="1" max="8" value="2"
-               oninput="setHours(parseInt(this.value))" />
+        <input type="range" class="hour-slider" id="hours-slider" min="1" max="8" value="2" oninput="setHours(parseInt(this.value))" />
         <button class="hour-btn" id="btn-plus" onclick="changeHours(1)">+</button>
       </div>
       <div class="hour-marks">
@@ -778,26 +498,43 @@
         <span>5h</span><span>6h</span><span>7h</span><span>8h</span>
       </div>
 
+      <div class="fair-wage">
+        <p id="fair-total-text" data-i18n="fair.total"><strong>💚 Revenu direct :</strong> <span id="wage-total">36 €</span> iront directement dans la poche de <span id="wage-name">—</span>.</p>
+      </div>
+
       <div class="price-preview" id="price-preview">
-        <div class="price-row"><span data-i18n="pr.rate.lbl">Taux horaire</span><span id="pr-rate">22 €/h</span></div>
-        <div class="price-row"><span id="pr-hours-label">2h × 22 €</span><span id="pr-base">44 €</span></div>
-        <div class="price-row" id="pr-rooms-row"><span data-i18n="pr.rooms.lbl">Options pièces</span><span id="pr-rooms">+0 €</span></div>
-        <div class="price-row" id="pr-discount-row" style="display:none;color:var(--success)"><span data-i18n="pr.discount.lbl">Remise nettoyage complet</span><span id="pr-discount">−0 €</span></div>
-        <div class="price-row"><span data-i18n="pr.total.lbl">Total estimé</span><span id="pr-total">44 €</span></div>
+        <div class="price-row"><span data-i18n="pr.rate.lbl">Taux horaire</span><span id="pr-rate">18 €/h</span></div>
+        <div class="price-row"><span id="pr-hours-label">2h × 18 €</span><span id="pr-base">36 €</span></div>
+        <div class="price-row"><span data-i18n="pr.fair.lbl">Revenu travailleuse</span><span id="pr-fair" style="color:var(--accent);font-weight:700;">36 €</span></div>
+        <div class="price-row"><span data-i18n="pr.fee.lbl">Frais plateforme</span><span id="pr-fee" style="color:var(--success);">0 €</span></div>
+        <div class="price-row"><span data-i18n="pr.total.lbl">Total a payer</span><span id="pr-total">36 €</span></div>
       </div>
 
       <div class="mt-16">
-        <button class="btn-primary" onclick="nextStep(3)" data-i18n="s3.next">Voir le récapitulatif →</button>
+        <button class="btn-primary" onclick="nextStep(4)" data-i18n="s4.next">Voir le recapitulatif →</button>
       </div>
     </div>
 
-    <!-- STEP 4 : Récap -->
-    <div class="step-content" id="step-4" style="display:none">
-      <h2 class="step-title" data-i18n="s4.title">Récapitulatif</h2>
-      <p class="step-subtitle" data-i18n="s4.sub">Vérifiez votre commande avant de confirmer.</p>
+    <!-- STEP 5 : Recap -->
+    <div class="step-content" id="step-5" style="display:none">
+      <h2 class="step-title" data-i18n="s5.title">Recapitulatif</h2>
+      <p class="step-subtitle" data-i18n="s5.sub">Verifiez votre commande avant de confirmer. Merci pour votre solidarite.</p>
 
       <div class="summary-card">
-        <h4 data-i18n="s4.addr">📍 Adresse</h4>
+        <h4 data-i18n="s5.service">🔧 Service</h4>
+        <div id="summary-service">—</div>
+      </div>
+
+      <div class="summary-card">
+        <h4 data-i18n="s5.worker">👩 Travailleuse</h4>
+        <div class="summary-item">
+          <span class="summary-emoji" id="summary-worker-emoji">👩</span>
+          <span id="summary-worker">—</span>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <h4 data-i18n="s5.addr">📍 Adresse</h4>
         <div class="summary-item">
           <span class="summary-emoji">🏠</span>
           <span id="summary-addr">—</span>
@@ -805,22 +542,23 @@
       </div>
 
       <div class="summary-card">
-        <h4 data-i18n="s4.rooms">🧹 Pièces sélectionnées</h4>
-        <div id="summary-rooms">—</div>
-      </div>
-
-      <div class="summary-card">
-        <h4 data-i18n="s4.dur">⏱️ Durée</h4>
+        <h4 data-i18n="s5.dur">⏱️ Duree</h4>
         <div class="summary-item">
           <span class="summary-emoji">🕐</span>
           <span id="summary-hours">—</span>
         </div>
       </div>
 
+      <div class="summary-card">
+        <h4 data-i18n="s5.economy">💰 Modele economique</h4>
+        <div class="receipt-row"><span data-i18n="pr.fair.lbl">Revenu travailleuse</span><span id="summary-fair">—</span></div>
+        <div class="receipt-row"><span data-i18n="pr.fee.lbl">Frais plateforme</span><span id="summary-fee" style="color:var(--success);">0 €</span></div>
+      </div>
+
       <div class="total-box">
-        <div class="total-label" data-i18n="s4.totalLabel">TOTAL ESTIMÉ</div>
+        <div class="total-label" data-i18n="s5.totalLabel">TOTAL A PAYER</div>
         <div class="total-amount" id="summary-total">—</div>
-        <div class="total-note" data-i18n="s4.totalNote">Paiement sécurisé · débité après le service</div>
+        <div class="total-note" data-i18n="s5.totalNote">100% verse a la travailleuse · 0% commission</div>
       </div>
 
       <div class="pay-section">
@@ -846,7 +584,7 @@
         <div id="pay-card" class="card-form">
           <div id="card-fallback">
             <div class="card-field">
-              <label data-i18n="pay.cardNum">Numéro de carte</label>
+              <label data-i18n="pay.cardNum">Numero de carte</label>
               <div class="card-input-wrap">
                 <input class="card-input" id="cc-number" inputmode="numeric" autocomplete="cc-number" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCardNumber(this)" />
                 <span class="card-brand" id="cc-brand" style="display:none"></span>
@@ -877,22 +615,20 @@
           <p class="wallet-hint" data-i18n="pay.walletHint">Confirmez avec Face ID, Touch ID ou votre empreinte.</p>
         </div>
 
-        <div class="pay-secure">🔒 <span data-i18n="pay.secure">Paiement sécurisé · chiffré SSL</span></div>
-        <div class="stripe-badge"><span data-i18n="pay.poweredBy">Propulsé par Stripe</span></div>
+        <div class="pay-secure">🔒 <span data-i18n="pay.secure">Paiement securise · chiffre SSL</span></div>
+        <div class="stripe-badge"><span data-i18n="pay.poweredBy">Propulse par Stripe</span></div>
       </div>
 
-      <button class="btn-accent" id="confirm-btn" onclick="handlePay()" data-i18n="s4.confirm">🚀 Confirmer et trouver un nettoyeur</button>
+      <button class="btn-accent" id="confirm-btn" onclick="handlePay()" data-i18n="s5.confirm">🤲 Confirmer et aider {name}</button>
       <div style="height:12px"></div>
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════
-       SCREEN 2 — SEARCHING
-  ══════════════════════════════════════════ -->
+  <!-- SCREEN 2 — SEARCHING -->
   <div class="screen" id="screen-searching">
     <div class="header">
       <div style="width:36px"></div>
-      <span class="logo">Lava<span>GO</span></span>
+      <span class="logo">Mu<span>tua</span></span>
       <div style="width:36px"></div>
     </div>
     <div class="searching-screen">
@@ -901,50 +637,55 @@
         <div class="radar-ring"></div>
         <div class="radar-ring"></div>
         <div class="radar-ring"></div>
-        <div class="radar-center">🫧</div>
+        <div class="radar-center">🌎</div>
       </div>
-      <h2 class="search-title" data-i18n="search.title">Recherche en cours…</h2>
-      <p class="search-subtitle" data-i18n="search.sub">Nous cherchons le meilleur nettoyeur<br>disponible près de chez vous.</p>
-      <div class="cleaners-nearby" id="cleaners-nearby"></div>
-      <button class="cancel-small" onclick="goTo('screen-home')" data-i18n="search.cancel">Annuler la recherche</button>
+      <h2 class="search-title" data-i18n="search.title">Confirmation en cours…</h2>
+      <p class="search-subtitle" id="search-subtitle-text" data-i18n="search.sub">Nous contactons <strong id="search-name">—</strong><br>pour confirmer sa disponibilite.</p>
+      <div class="search-impact">
+        <p id="search-impact-text" data-i18n="search.impact">Grace a vous, <strong id="search-hours">—</strong> de travail remunere equitablement.</p>
+      </div>
+      <button class="cancel-small" onclick="goTo('screen-home')" data-i18n="search.cancel">Annuler</button>
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════
-       SCREEN 3 — MATCH FOUND
-  ══════════════════════════════════════════ -->
+  <!-- SCREEN 3 — MATCH FOUND -->
   <div class="screen" id="screen-match">
     <div class="match-hero">
       <div class="match-badge">
         <div class="match-badge-dot"></div>
-        <span data-i18n="match.found">Nettoyeur trouvé !</span>
+        <span data-i18n="match.found">Travailleuse confirmee !</span>
       </div>
-      <div class="avatar" id="match-avatar" style="background:#38BDF8">K</div>
-      <div class="match-name" id="match-name">Karim B.</div>
+      <div class="avatar" id="match-avatar" style="background:#D97706">M</div>
+      <div class="match-name" id="match-name">Maria G.</div>
+      <div class="match-origin" id="match-origin">🇨🇴 Colombie · A Paris depuis 3 ans</div>
       <div class="stars" id="match-stars">★★★★★</div>
-      <div class="rating-text" id="match-rating">4.9 · 142 services effectués</div>
+      <div class="rating-text" id="match-rating">4.9 · 47 services effectues</div>
     </div>
 
     <div class="match-card">
+      <div class="worker-bio" id="match-bio">
+        <strong>💚 Son histoire :</strong> Maria est arrivee de Colombie il y a 3 ans avec ses deux enfants. Elle cherche a subvenir aux besoins de sa famille tout en apprenant le francais. Elle adore le jardinage et le menage.
+      </div>
+
       <div class="eta-row">
         <div class="eta-badge">
-          <div class="val" id="match-eta">8</div>
-          <div class="lbl" data-i18n="match.etaLbl">min d'arrivée</div>
+          <div class="val" id="match-eta">25</div>
+          <div class="lbl" data-i18n="match.etaLbl">min d'arrivee</div>
         </div>
         <div class="eta-badge">
           <div class="val" id="match-duration">2h</div>
-          <div class="lbl" data-i18n="match.durLbl">durée réservée</div>
+          <div class="lbl" data-i18n="match.durLbl">duree reservee</div>
         </div>
         <div class="eta-badge">
-          <div class="val" id="match-price">44€</div>
-          <div class="lbl" data-i18n="match.priceLbl">prix estimé</div>
+          <div class="val" id="match-price">36€</div>
+          <div class="lbl" data-i18n="match.priceLbl">revenu direct</div>
         </div>
       </div>
 
       <div class="mini-map">
         <div class="map-grid"></div>
         <div class="route-line"></div>
-        <div class="route-start">🧹</div>
+        <div class="route-start">👩</div>
         <div class="route-end">🏠</div>
       </div>
 
@@ -952,17 +693,15 @@
         <button class="action-btn" onclick="showTracking()" data-i18n="match.track">📍 Suivre en direct</button>
         <button class="action-btn" onclick="alert('💬 Chat ouvert avec ' + document.getElementById('match-name').textContent)" data-i18n="match.contact">💬 Contacter</button>
       </div>
-      <button class="action-btn danger" style="width:100%;margin-bottom:16px;" onclick="cancelRide()" data-i18n="match.cancel">✕ Annuler la réservation</button>
+      <button class="action-btn danger" style="width:100%;margin-bottom:16px;" onclick="cancelRide()" data-i18n="match.cancel">✕ Annuler la reservation</button>
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════
-       SCREEN 4 — TRACKING
-  ══════════════════════════════════════════ -->
+  <!-- SCREEN 4 — TRACKING -->
   <div class="screen" id="screen-tracking">
     <div class="header">
       <div style="width:36px"></div>
-      <span class="logo">Lava<span>GO</span></span>
+      <span class="logo">Mu<span>tua</span></span>
       <div style="width:36px"></div>
     </div>
 
@@ -972,7 +711,7 @@
       <div class="road-h" style="top:65%;left:0;right:0"></div>
       <div class="road-v" style="left:30%;top:0;bottom:0"></div>
       <div class="road-v" style="left:65%;top:0;bottom:0"></div>
-      <div class="car-marker">🚗</div>
+      <div class="car-marker">🚲</div>
       <div class="home-marker">🏠</div>
     </div>
 
@@ -980,61 +719,64 @@
       <div class="progress-step done" id="track-1">
         <div class="step-icon">✓</div>
         <div class="step-info">
-          <h4 data-i18n="tr1.title">Réservation confirmée</h4>
-          <p data-i18n="tr1.desc">Votre demande a bien été prise en compte.</p>
+          <h4 data-i18n="tr1.title">Reservation confirmee</h4>
+          <p data-i18n="tr1.desc">Votre demande a bien ete prise en compte.</p>
         </div>
       </div>
       <div class="progress-step active" id="track-2">
-        <div class="step-icon">🚗</div>
+        <div class="step-icon">🚲</div>
         <div class="step-info">
-          <h4 data-i18n="tr2.title">Nettoyeur en route</h4>
-          <p id="eta-text">Arrivée dans environ 8 minutes…</p>
+          <h4 data-i18n="tr2.title">En route</h4>
+          <p id="eta-text">Arrivee dans environ 25 minutes…</p>
         </div>
       </div>
       <div class="progress-step" id="track-3">
         <div class="step-icon">🔔</div>
         <div class="step-info">
-          <h4 data-i18n="tr3.title">Arrivée</h4>
-          <p data-i18n="tr3.desc">Votre nettoyeur est devant chez vous.</p>
+          <h4 data-i18n="tr3.title">Arrivee</h4>
+          <p data-i18n="tr3.desc">Votre travailleuse est devant chez vous.</p>
         </div>
       </div>
       <div class="progress-step" id="track-4">
         <div class="step-icon">🧹</div>
         <div class="step-info">
           <h4 data-i18n="tr4.title">Service en cours</h4>
-          <p data-i18n="tr4.desc">Le nettoyage de votre domicile est en cours.</p>
+          <p data-i18n="tr4.desc">Le service est en cours. Merci pour votre confiance !</p>
         </div>
       </div>
       <div class="progress-step" id="track-5">
         <div class="step-icon">✨</div>
         <div class="step-info">
-          <h4 data-i18n="tr5.title">Service terminé</h4>
-          <p data-i18n="tr5.desc">Votre domicile est impeccable !</p>
+          <h4 data-i18n="tr5.title">Service termine</h4>
+          <p data-i18n="tr5.desc">Le service est termine ! N'oubliez pas de laisser un avis.</p>
         </div>
       </div>
     </div>
 
     <div style="padding: 0 24px 32px">
-      <button class="btn-primary" onclick="simulateComplete()" data-i18n="tr.demo">Simuler la fin du service (démo)</button>
+      <button class="btn-primary" onclick="simulateComplete()" data-i18n="tr.demo">Simuler la fin du service (demo)</button>
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════
-       SCREEN 5 — DONE / RATING
-  ══════════════════════════════════════════ -->
+  <!-- SCREEN 5 — DONE / RATING -->
   <div class="screen" id="screen-done">
     <div class="header">
       <div style="width:36px"></div>
-      <span class="logo">Lava<span>GO</span></span>
+      <span class="logo">Mu<span>tua</span></span>
       <div style="width:36px"></div>
     </div>
     <div class="done-screen">
       <div class="checkmark-circle">✓</div>
-      <h2 class="done-title" data-i18n="done.title">Service terminé !</h2>
-      <p class="done-subtitle" data-i18n="done.sub">Votre domicile est impeccable.<br>Merci d'avoir choisi LavaGO.</p>
+      <h2 class="done-title" data-i18n="done.title">Service termine !</h2>
+      <p class="done-subtitle" data-i18n="done.sub">Merci d'avoir fait confiance a Mutua.<br>Votre solidarite fait toute la difference.</p>
+
+      <div class="impact-receipt">
+        <h4 data-i18n="done.impact">💚 Votre impact</h4>
+        <p id="done-impact-text" data-i18n="done.impact.text">Grace a vous, <strong id="impact-hours">—</strong> de travail remunere a <strong id="impact-name">—</strong>. Chaque heure compte pour reconstruire une vie digne.</p>
+      </div>
 
       <div class="rating-card">
-        <h3 data-i18n="done.rate">Notez votre nettoyeur</h3>
+        <h3 data-i18n="done.rate">Notez votre travailleuse</h3>
         <div class="stars-rate" id="stars-rate">
           <span class="star-btn lit" data-val="1" onclick="rateStar(1)">★</span>
           <span class="star-btn lit" data-val="2" onclick="rateStar(2)">★</span>
@@ -1042,63 +784,106 @@
           <span class="star-btn lit" data-val="4" onclick="rateStar(4)">★</span>
           <span class="star-btn" data-val="5" onclick="rateStar(5)">★</span>
         </div>
-        <p id="rating-msg" style="font-size:13px;color:var(--gray)">Très bien !</p>
+        <p id="rating-msg" style="font-size:13px;color:var(--gray)">Tres bien !</p>
       </div>
 
       <div class="summary-card" style="width:100%">
-        <h4 data-i18n="done.receipt">🧾 Reçu</h4>
+        <h4 data-i18n="done.receipt">🧾 Recu</h4>
         <div class="receipt-row"><span data-i18n="rc.svc">Service</span><span id="rc-hours">—</span></div>
-        <div class="receipt-row"><span data-i18n="rc.rooms">Pièces</span><span id="rc-rooms">—</span></div>
-        <div class="receipt-row"><span data-i18n="rc.cleaner">Nettoyeur</span><span id="rc-cleaner">—</span></div>
-        <div class="receipt-row"><span data-i18n="rc.total">Total payé</span><span id="rc-total">—</span></div>
+        <div class="receipt-row"><span data-i18n="rc.worker">Travailleuse</span><span id="rc-worker">—</span></div>
+        <div class="receipt-row"><span data-i18n="rc.total">Total paye</span><span id="rc-total">—</span></div>
+        <div class="receipt-row"><span data-i18n="rc.fair">Revenu direct</span><span id="rc-fair" style="color:var(--accent);font-weight:700;">—</span></div>
       </div>
 
       <div style="width:100%;margin-top:16px">
-        <button class="btn-primary" onclick="newBooking()" data-i18n="done.newBooking">Nouvelle réservation</button>
+        <button class="btn-primary" onclick="newBooking()" data-i18n="done.newBooking">Nouvelle reservation</button>
         <div style="height:12px"></div>
-        <button class="btn-outline" onclick="goTo('screen-home')" data-i18n="done.back">Retour à l'accueil</button>
+        <button class="btn-outline" onclick="goTo('screen-home')" data-i18n="done.back">Retour a l'accueil</button>
       </div>
     </div>
   </div>
 
 </div>
 
-<!-- ══════════════════════════════════════════════
-     JAVASCRIPT
-══════════════════════════════════════════════ -->
 <script>
   /* ── STATE ── */
   const state = {
     currentScreen: 'screen-home',
     step: 1,
+    services: new Set(),
     address: { street:'', zip:'', city:'', extra:'' },
-    rooms: new Set(),
+    worker: null,
     hours: 2,
     price: 0,
-    cleaner: null,
     rating: 4,
     payMethod: 'card',
     coords: null,
   };
 
-  const RATE = 22; // €/h
+  const RATE = 18; // €/h - fair wage
 
-  const ROOMS_INFO = {
-    cuisine:   { label:'Cuisine',          emoji:'🍳', price:5 },
-    chambre:   { label:'Chambre',          emoji:'🛏️', price:3 },
-    salle_bain:{ label:'Salle de bain',    emoji:'🚿', price:5 },
-    salon:     { label:'Salon / Séjour',   emoji:'🛋️', price:3 },
-    bureau:    { label:'Bureau',           emoji:'💼', price:3 },
-    entree:    { label:'Entrée / Couloir', emoji:'🚪', price:2 },
-    complet:   { label:'Nettoyage Complet',emoji:'✨', price:0 },
+  const SERVICES_INFO = {
+    menage:         { label:'Ménage',          emoji:'🧹', desc:'Nettoyage complet' },
+    repassage:      { label:'Repassage',       emoji:'👔', desc:'Linge et repassage' },
+    jardinage:      { label:'Jardinage',       emoji:'🌿', desc:'Tonte, taille, arrosage' },
+    recolte:        { label:'Récoltes',        emoji:'🍎', desc:'Cueillette, ramassage' },
+    courses:        { label:'Courses',         emoji:'🛒', desc:'Faire les courses' },
+    accompagnement: { label:'Accompagnement',  emoji:'🤝', desc:'Aide au quotidien' },
+    vitres:         { label:'Vitres',          emoji:'🪟', desc:'Nettoyage des vitres' },
+    linge:          { label:'Linge',           emoji:'🧺', desc:'Tri, lavage, pliage' },
+    cuisine:        { label:'Cuisine simple',  emoji:'🍲', desc:'Repas maison du quotidien' },
+    gardeenfant:    { label:'Garde d\'enfants', emoji:'🧸', desc:'Sortie d\'ecole et garde' },
   };
 
-  const CLEANERS = [
-    { id:1, name:'Sophie M.',  rating:4.9, reviews:142, eta:8,  avatar:'S', color:'#E879F9' },
-    { id:2, name:'Karim B.',   rating:4.7, reviews:89,  eta:12, avatar:'K', color:'#38BDF8' },
-    { id:3, name:'Marie L.',   rating:4.8, reviews:203, eta:6,  avatar:'M', color:'#34D399' },
-    { id:4, name:'Thomas R.',  rating:4.6, reviews:57,  eta:15, avatar:'T', color:'#FBBF24' },
+  const WORKERS = [
+    { id:1, name:'María G.', country:'colombia', flag:'🇨🇴', years:3, rating:4.9, reviews:47, eta:25, avatar:'M', color:'#D97706',
+      story:{
+        fr:'María est arrivee de Colombie il y a 3 ans avec ses deux enfants. Elle cherche a subvenir aux besoins de sa famille tout en apprenant le francais. Elle adore le jardinage et le menage.',
+        es:'Maria llego de Colombia hace 3 anos con sus dos hijos. Busca sostener a su familia mientras aprende frances. Le encantan la jardineria y la limpieza.'
+      },
+      tags:['menage','jardinage','repassage'] },
+    { id:2, name:'Carmen R.', country:'peru', flag:'🇵🇪', years:5, rating:4.8, reviews:62, eta:18, avatar:'C', color:'#059669',
+      story:{
+        fr:'Carmen vit en France depuis 5 ans. Ancienne institutrice au Perou, elle met son sens de l\'organisation au service des familles. Elle parle espagnol et apprend le francais.',
+        es:'Carmen vive en Francia desde hace 5 anos. Ex maestra en Peru, pone su sentido de organizacion al servicio de las familias. Habla espanol y aprende frances.'
+      },
+      tags:['menage','courses','accompagnement','linge'] },
+    { id:3, name:'Rosa M.', country:'ecuador', flag:'🇪🇨', years:2, rating:4.7, reviews:31, eta:30, avatar:'R', color:'#7C3AED',
+      story:{
+        fr:'Rosa est venue d\'Equateur pour rejoindre sa soeur. Elle est tres douee pour le repassage et les soins aux personnes agees. Elle reve de devenir aide-soignante.',
+        es:'Rosa vino de Ecuador para reunirse con su hermana. Es muy buena en planchado y acompanamiento a personas mayores. Su sueno es formarse como auxiliar de salud.'
+      },
+      tags:['repassage','accompagnement','menage','gardeenfant'] },
+    { id:4, name:'Ana P.', country:'bolivia', flag:'🇧🇴', years:4, rating:4.9, reviews:55, eta:22, avatar:'A', color:'#DC2626',
+      story:{
+        fr:'Ana a quitte la Bolivie pour offrir un avenir meilleur a ses trois enfants restes au pays. Elle envoie de l\'argent chaque mois. Le jardinage et les recoltes sont son domaine.',
+        es:'Ana dejo Bolivia para ofrecer un mejor futuro a sus tres hijos que siguen en su pais. Envia dinero cada mes. Su fuerte es la jardineria y la cosecha.'
+      },
+      tags:['jardinage','recolte','menage','vitres'] },
+    { id:5, name:'Lucía F.', country:'argentina', flag:'🇦🇷', years:1, rating:4.6, reviews:19, eta:35, avatar:'L', color:'#2563EB',
+      story:{
+        fr:'Lucia est arrivee d\'Argentine il y a un an. Etudiante en soins infirmiers le week-end, elle travaille avec Mutua pour payer ses etudes. Elle est dynamique et souriante.',
+        es:'Lucia llego de Argentina hace un ano. Estudia enfermeria los fines de semana y trabaja con Mutua para pagar sus estudios. Es dinamica y sonriente.'
+      },
+      tags:['courses','menage','accompagnement','cuisine'] },
+    { id:6, name:'Elena S.', country:'venezuela', flag:'🇻🇪', years:6, rating:5.0, reviews:89, eta:15, avatar:'E', color:'#EA580C',
+      story:{
+        fr:'Elena est au coeur de la communaute depuis 6 ans. Mere celibataire de deux adolescents, elle a bati sa reputation sur la fiabilite et la chaleur humaine.',
+        es:'Elena esta en el corazon de la comunidad desde hace 6 anos. Madre soltera de dos adolescentes, construyo su reputacion por su fiabilidad y cercania humana.'
+      },
+      tags:['menage','repassage','jardinage','accompagnement','linge'] },
   ];
+
+  function getWorkerStory(worker) {
+    if (!worker || !worker.story) return '';
+    if (typeof worker.story === 'string') return worker.story;
+    return worker.story[currentLang] || worker.story.fr || '';
+  }
+
+  function getWorkerFirstName(worker) {
+    if (!worker || !worker.name) return '—';
+    return worker.name.split(' ')[0];
+  }
 
   /* ── NAVIGATION ── */
   function goTo(screenId, back = false) {
@@ -1111,7 +896,7 @@
     state.currentScreen = screenId;
     if (screenId === 'screen-booking') {
       ensureMap();
-      if (state.step === 4) selectPayMethod(state.payMethod || 'card');
+      if (state.step === 5) selectPayMethod(state.payMethod || 'card');
     }
   }
 
@@ -1129,7 +914,7 @@
 
   /* ── STEPS ── */
   function showStep(n) {
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= 5; i++) {
       const el = document.getElementById('step-' + i);
       if (el) el.style.display = i === n ? 'block' : 'none';
       const dot = document.getElementById('dot-' + i);
@@ -1140,13 +925,22 @@
       }
     }
     state.step = n;
-    document.querySelector('#screen-booking .step-content.active') && 
-      document.querySelector('#screen-booking .step-content.active').scrollTo(0,0);
+    if (n === 3) renderWorkers();
+    if (n === 4 && state.worker) {
+      document.getElementById('wage-name').textContent = state.worker.name;
+    }
     document.getElementById('screen-booking').scrollTo(0,0);
   }
 
   function nextStep(from) {
     if (from === 1) {
+      if (state.services.size === 0) {
+        document.getElementById('service-error').style.display = 'block';
+        return;
+      }
+      document.getElementById('service-error').style.display = 'none';
+    }
+    if (from === 2) {
       const street = document.getElementById('addr-street').value.trim();
       const zip    = document.getElementById('addr-zip').value.trim();
       const city   = document.getElementById('addr-city').value.trim();
@@ -1154,55 +948,67 @@
         alert(t('alert.addr'));
         return;
       }
-      state.address = {
-        street, zip, city,
-        extra: document.getElementById('addr-extra').value.trim(),
-      };
-    }
-    if (from === 2) {
-      if (state.rooms.size === 0) {
-        document.getElementById('rooms-error').style.display = 'block';
-        return;
-      }
-      document.getElementById('rooms-error').style.display = 'none';
+      state.address = { street, zip, city, extra: document.getElementById('addr-extra').value.trim() };
     }
     if (from === 3) {
+      if (!state.worker) {
+        document.getElementById('worker-error').style.display = 'block';
+        return;
+      }
+      document.getElementById('worker-error').style.display = 'none';
+    }
+    if (from === 4) {
       buildSummary();
     }
     showStep(from + 1);
   }
 
-  /* ── ROOMS ── */
-  function toggleRoom(card) {
-    const room = card.dataset.room;
-    const isSpecial = card.dataset.special === 'true';
-
-    if (isSpecial) {
-      // Toggle "complet": if selecting, clear others; if deselecting, just remove
-      if (state.rooms.has('complet')) {
-        state.rooms.clear();
-        document.querySelectorAll('.room-card.selected').forEach(c => c.classList.remove('selected'));
-      } else {
-        state.rooms.clear();
-        document.querySelectorAll('.room-card.selected').forEach(c => c.classList.remove('selected'));
-        state.rooms.add('complet');
-        card.classList.add('selected');
-      }
+  /* ── SERVICES ── */
+  function toggleService(card) {
+    const svc = card.dataset.service;
+    if (state.services.has(svc)) {
+      state.services.delete(svc);
+      card.classList.remove('selected');
     } else {
-      // If "complet" is selected, remove it first
-      if (state.rooms.has('complet')) {
-        state.rooms.delete('complet');
-        document.querySelector('[data-room="complet"]').classList.remove('selected');
-      }
-      if (state.rooms.has(room)) {
-        state.rooms.delete(room);
-        card.classList.remove('selected');
-      } else {
-        state.rooms.add(room);
-        card.classList.add('selected');
-      }
+      state.services.add(svc);
+      card.classList.add('selected');
     }
-    updatePrice();
+  }
+
+  /* ── WORKERS ── */
+  function renderWorkers() {
+    const list = document.getElementById('worker-list');
+    list.innerHTML = '';
+    WORKERS.forEach(w => {
+      const card = document.createElement('div');
+      card.className = 'worker-card' + (state.worker && state.worker.id === w.id ? ' selected' : '');
+      card.onclick = () => selectWorker(w);
+      card.innerHTML = `
+        <div class="worker-avatar" style="background:${w.color}">${w.avatar}</div>
+        <div class="worker-info">
+          <div class="worker-name">${w.name}</div>
+          <div class="worker-meta">${w.flag} ${t('country.' + w.country)} · ${w.years} ${t('years.france')} · ⭐ ${w.rating} · ${w.reviews} ${t('services')}</div>
+          <div class="worker-story"><strong>💚 ${t('worker.story')} :</strong> ${getWorkerStory(w)}</div>
+          <div class="worker-tags">${w.tags.map(tg => `<span class="worker-tag">${SERVICES_INFO[tg]?.label || tg}</span>`).join('')}</div>
+        </div>
+        <div class="worker-check">${state.worker && state.worker.id === w.id ? '✓' : ''}</div>
+      `;
+      list.appendChild(card);
+    });
+  }
+
+  function selectWorker(w) {
+    state.worker = w;
+    document.querySelectorAll('.worker-card').forEach(c => {
+      c.classList.remove('selected');
+      c.querySelector('.worker-check').textContent = '';
+    });
+    const selected = document.querySelector(`.worker-card:nth-child(${WORKERS.indexOf(w) + 1})`);
+    if (selected) {
+      selected.classList.add('selected');
+      selected.querySelector('.worker-check').textContent = '✓';
+    }
+    document.getElementById('worker-error').style.display = 'none';
   }
 
   /* ── HOURS ── */
@@ -1222,60 +1028,57 @@
 
   /* ── PRICE ── */
   function computePrice() {
-    const isComplet = state.rooms.has('complet');
-    let roomsBonus = 0;
-    if (!isComplet) {
-      state.rooms.forEach(r => { roomsBonus += (ROOMS_INFO[r]?.price || 0); });
-    } else {
-      // All rooms bonus
-      Object.keys(ROOMS_INFO).forEach(r => {
-        if (r !== 'complet') roomsBonus += ROOMS_INFO[r].price;
-      });
-    }
-    const base  = state.hours * RATE;
-    const sub   = base + roomsBonus;
-    const disc  = isComplet ? Math.round(sub * 0.15) : 0;
-    const total = sub - disc;
-    return { base, roomsBonus, disc, total, isComplet };
+    const base = state.hours * RATE;
+    return { base, total: base, fair: base, fee: 0 };
   }
 
   function updatePrice() {
-    const { base, roomsBonus, disc, total, isComplet } = computePrice();
+    const { base, total, fair, fee } = computePrice();
     state.price = total;
     document.getElementById('pr-hours-label').textContent = state.hours + 'h × ' + RATE + ' €';
     document.getElementById('pr-base').textContent = base + ' €';
-    document.getElementById('pr-rooms').textContent = '+' + roomsBonus + ' €';
-    document.getElementById('pr-discount-row').style.display = isComplet ? 'flex' : 'none';
-    document.getElementById('pr-discount').textContent = '−' + disc + ' €';
+    document.getElementById('pr-fair').textContent = fair + ' €';
+    document.getElementById('pr-fee').textContent = fee + ' €';
     document.getElementById('pr-total').textContent = total + ' €';
+    document.getElementById('wage-total').textContent = fair + ' €';
+    if (state.worker) document.getElementById('wage-name').textContent = state.worker.name;
   }
 
   /* ── SUMMARY ── */
   function buildSummary() {
-    const { total } = computePrice();
+    const { total, fair } = computePrice();
     state.price = total;
+
+    // Service
+    const svcEl = document.getElementById('summary-service');
+    svcEl.innerHTML = '';
+    state.services.forEach(s => {
+      const info = SERVICES_INFO[s];
+      svcEl.innerHTML += `<div class="summary-item"><span class="summary-emoji">${info.emoji}</span><span>${info.label}</span></div>`;
+    });
+
+    // Worker
+    if (state.worker) {
+      document.getElementById('summary-worker-emoji').textContent = state.worker.avatar;
+      document.getElementById('summary-worker').textContent = state.worker.name + ' (' + state.worker.flag + ' ' + t('country.' + state.worker.country) + ')';
+    }
 
     // Address
     const addr = state.address;
-    const addrStr = addr.street + ', ' + addr.zip + ' ' + addr.city +
-                    (addr.extra ? ' (' + addr.extra + ')' : '');
+    const addrStr = addr.street + ', ' + addr.zip + ' ' + addr.city + (addr.extra ? ' (' + addr.extra + ')' : '');
     document.getElementById('summary-addr').textContent = addrStr;
-
-    // Rooms
-    const roomsEl = document.getElementById('summary-rooms');
-    roomsEl.innerHTML = '';
-    if (state.rooms.has('complet')) {
-      roomsEl.innerHTML = '<div class="summary-item"><span class="summary-emoji">✨</span><span>' + t('summary.complet') + '</span></div>';
-    } else {
-      state.rooms.forEach(r => {
-        const info = ROOMS_INFO[r];
-        roomsEl.innerHTML += `<div class="summary-item"><span class="summary-emoji">${info.emoji}</span><span>${info.label}</span></div>`;
-      });
-    }
 
     // Hours & total
     document.getElementById('summary-hours').textContent = state.hours + ' ' + (state.hours > 1 ? t('h.hours') : t('h.hour'));
     document.getElementById('summary-total').textContent = total + ' €';
+    document.getElementById('summary-fair').textContent = fair + ' €';
+    document.getElementById('summary-fee').textContent = '0 €';
+
+    // Update confirm button
+    const cbtn = document.getElementById('confirm-btn');
+    if (cbtn && state.worker) {
+      cbtn.textContent = t('s5.confirm').replace('{name}', state.worker.name);
+    }
 
     ensurePayment();
     selectPayMethod(state.payMethod || 'card');
@@ -1288,45 +1091,33 @@
     startSearch();
   }
 
-  /* ── SEARCH ANIMATION ── */
+  /* ── SEARCH ── */
   let searchTimer = null;
 
   function startSearch() {
-    const nearby = document.getElementById('cleaners-nearby');
-    nearby.innerHTML = '';
-    const shuffled = CLEANERS.slice().sort(() => Math.random() - .5);
-
-    // Show pings with delay
-    shuffled.forEach((c, i) => {
-      setTimeout(() => {
-        const el = document.createElement('div');
-        el.className = 'cleaner-ping';
-        el.innerHTML = `<div class="cleaner-dot"></div><span>${c.name} — ${c.eta} min</span>`;
-        nearby.appendChild(el);
-      }, 800 + i * 700);
-    });
-
-    // Select closest after ~5s
+    if (state.worker) {
+      document.getElementById('search-name').textContent = state.worker.name;
+      document.getElementById('search-hours').textContent = state.hours + 'h';
+    }
     searchTimer = setTimeout(() => {
-      const best = shuffled.reduce((a, b) => a.eta < b.eta ? a : b);
-      state.cleaner = best;
-      showMatch(best);
-    }, 5000);
+      showMatch(state.worker);
+    }, 3500);
   }
 
   /* ── MATCH SCREEN ── */
-  function showMatch(cleaner) {
-    document.getElementById('match-avatar').textContent = cleaner.avatar;
-    document.getElementById('match-avatar').style.background = cleaner.color;
-    document.getElementById('match-name').textContent = cleaner.name;
-    const stars = '★'.repeat(Math.round(cleaner.rating)) + '☆'.repeat(5 - Math.round(cleaner.rating));
+  function showMatch(worker) {
+    document.getElementById('match-avatar').textContent = worker.avatar;
+    document.getElementById('match-avatar').style.background = worker.color;
+    document.getElementById('match-name').textContent = worker.name;
+    document.getElementById('match-origin').textContent = worker.flag + ' ' + t('country.' + worker.country) + ' · ' + t('match.here').replace('{n}', worker.years);
+    const stars = '★'.repeat(Math.round(worker.rating)) + '☆'.repeat(5 - Math.round(worker.rating));
     document.getElementById('match-stars').textContent = stars;
-    document.getElementById('match-rating').textContent =
-      cleaner.rating.toFixed(1) + ' · ' + cleaner.reviews + ' ' + t('services');
-    document.getElementById('match-eta').textContent = cleaner.eta;
+    document.getElementById('match-rating').textContent = worker.rating.toFixed(1) + ' · ' + worker.reviews + ' ' + t('services');
+    document.getElementById('match-bio').innerHTML = '<strong>💚 ' + t('worker.story') + ' :</strong> ' + getWorkerStory(worker);
+    document.getElementById('match-eta').textContent = worker.eta;
     document.getElementById('match-duration').textContent = state.hours + 'h';
     document.getElementById('match-price').textContent = state.price + '€';
-    document.getElementById('eta-text').textContent = t('eta.text').replace('{n}', cleaner.eta);
+    document.getElementById('eta-text').textContent = t('eta.text').replace('{n}', worker.eta);
     goTo('screen-match');
   }
 
@@ -1365,15 +1156,12 @@
 
   /* ── DONE ── */
   function showDone() {
-    // Fill receipt
     document.getElementById('rc-hours').textContent = state.hours + t('h.menage');
-    const roomList = state.rooms.has('complet')
-      ? t('nettoyage.complet')
-      : [...state.rooms].map(r => ROOMS_INFO[r]?.label).join(', ');
-    document.getElementById('rc-rooms').textContent = roomList;
-    document.getElementById('rc-cleaner').textContent =
-      state.cleaner ? state.cleaner.name : '—';
+    document.getElementById('rc-worker').textContent = state.worker ? state.worker.name : '—';
     document.getElementById('rc-total').textContent = state.price + ' €';
+    document.getElementById('rc-fair').textContent = state.price + ' €';
+    document.getElementById('impact-hours').textContent = state.hours + 'h';
+    document.getElementById('impact-name').textContent = state.worker ? getWorkerFirstName(state.worker) : '—';
     goTo('screen-done');
   }
 
@@ -1389,16 +1177,14 @@
 
   /* ── NEW BOOKING ── */
   function newBooking() {
-    // Reset state
-    state.rooms.clear();
+    state.services.clear();
+    state.worker = null;
     state.hours = 2;
     state.price = 0;
-    state.cleaner = null;
     state.step = 1;
     state.address = { street:'', zip:'', city:'', extra:'' };
 
-    // Reset UI
-    document.querySelectorAll('.room-card.selected').forEach(c => c.classList.remove('selected'));
+    document.querySelectorAll('.service-card.selected').forEach(c => c.classList.remove('selected'));
     document.getElementById('addr-street').value = '';
     document.getElementById('addr-zip').value    = '';
     document.getElementById('addr-city').value   = '';
@@ -1408,13 +1194,10 @@
     goTo('screen-booking');
   }
 
-  /* ──────────────────────────────────────────
-     CONFIG — colle tes clés ici pour le mode réel
-  ────────────────────────────────────────── */
-  const GOOGLE_MAPS_API_KEY = '';      // ex: 'AIza...' → active Google Maps (sinon carte OpenStreetMap)
-  const STRIPE_PUBLISHABLE_KEY = '';   // ex: 'pk_live_...' → active Stripe (sinon mode démo)
+  /* ── CONFIG ── */
+  const GOOGLE_MAPS_API_KEY = '';
+  const STRIPE_PUBLISHABLE_KEY = '';
 
-  /* ── LOGOS ── */
   const SVG_VISA = '<svg viewBox="0 0 48 16" height="14"><text x="0" y="13" font-family="Arial" font-size="15" font-weight="bold" font-style="italic" fill="#1A1F71">VISA</text></svg>';
   const SVG_MC   = '<svg viewBox="0 0 40 24" height="20"><circle cx="15" cy="12" r="11" fill="#EB001B"/><circle cx="25" cy="12" r="11" fill="#F79E1B" fill-opacity=".85"/></svg>';
   const SVG_AMEX = '<svg viewBox="0 0 48 16" height="14"><rect width="48" height="16" rx="2" fill="#2E77BC"/><text x="24" y="11.5" text-anchor="middle" font-family="Arial" font-size="8.5" font-weight="bold" fill="#fff">AMEX</text></svg>';
@@ -1426,9 +1209,7 @@
   function gv(id){ const e = document.getElementById(id); return e ? e.value.trim() : ''; }
   function sv(id, v){ const e = document.getElementById(id); if (e) e.value = v; }
 
-  /* ──────────────────────────────────────────
-     MAP — Google Maps si clé, sinon Leaflet/OSM
-  ────────────────────────────────────────── */
+  /* ── MAP ── */
   let map = null, mapMarker = null, geocoder = null, mapApi = null;
   let mapReady = false, mapLoading = false, geocodeTimer = null;
 
@@ -1459,9 +1240,9 @@
   }
   function loadGoogleMaps(){
     if (window.google && window.google.maps) return initGoogleMap();
-    window.__lavagoMapInit = initGoogleMap;
+    window.__mutuaMapInit = initGoogleMap;
     const s = document.createElement('script');
-    s.src = 'https://maps.googleapis.com/maps/api/js?key=' + GOOGLE_MAPS_API_KEY + '&libraries=places&callback=__lavagoMapInit';
+    s.src = 'https://maps.googleapis.com/maps/api/js?key=' + GOOGLE_MAPS_API_KEY + '&libraries=places&callback=__mutuaMapInit';
     s.async = true;
     s.onerror = () => { mapLoading = false; loadLeaflet(); };
     document.head.appendChild(s);
@@ -1533,9 +1314,7 @@
     }, () => alert(t('map.geoErr')), { enableHighAccuracy: true, timeout: 8000 });
   }
 
-  /* ──────────────────────────────────────────
-     PAYMENT — Stripe si clé, sinon mode démo
-  ────────────────────────────────────────── */
+  /* ── PAYMENT ── */
   let stripe = null, cardElement = null, paymentRequest = null, prButton = null;
   let stripeReady = false, stripeLoading = false, prbAvailable = false;
 
@@ -1553,11 +1332,11 @@
     try {
       stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
       const elements = stripe.elements();
-      cardElement = elements.create('card', { style: { base: { fontFamily: 'Inter, sans-serif', fontSize: '15px', color: '#0F172A', '::placeholder': { color: '#94A3B8' } } } });
+      cardElement = elements.create('card', { style: { base: { fontFamily: 'Inter, sans-serif', fontSize: '15px', color: '#1C1917', '::placeholder': { color: '#A8A29E' } } } });
       const fb = document.getElementById('card-fallback'); if (fb) fb.style.display = 'none';
       const ce = document.getElementById('card-element'); if (ce){ ce.style.display = 'block'; cardElement.mount('#card-element'); }
       cardElement.on('change', e => showCardError(e.error ? e.error.message : ''));
-      paymentRequest = stripe.paymentRequest({ country: 'FR', currency: 'eur', total: { label: 'LavaGO', amount: Math.round(state.price * 100) }, requestPayerName: true });
+      paymentRequest = stripe.paymentRequest({ country: 'FR', currency: 'eur', total: { label: 'Mutua', amount: Math.round(state.price * 100) }, requestPayerName: true });
       prButton = elements.create('paymentRequestButton', { paymentRequest });
       paymentRequest.canMakePayment().then(r => { prbAvailable = !!r; }).catch(() => {});
       paymentRequest.on('paymentmethod', ev => { ev.complete('success'); confirmBooking(); });
@@ -1649,11 +1428,11 @@
   function updatePayUI(){
     const amt = state.price + ' €';
     const cbtn = document.getElementById('confirm-btn');
-    if (cbtn && !cbtn.disabled) cbtn.textContent = t('s4.confirm').replace('{amount}', amt);
+    if (cbtn && !cbtn.disabled && state.worker) cbtn.textContent = t('s5.confirm').replace('{name}', state.worker.name);
     const demo = document.getElementById('wallet-demo');
     if (demo && state.payMethod && state.payMethod !== 'card')
       demo.innerHTML = (state.payMethod === 'apple' ? APPLE_LOGO : GPAY_LOGO) + '<span>' + (state.payMethod === 'apple' ? 'Apple Pay' : 'Google Pay') + ' · ' + amt + '</span>';
-    if (paymentRequest){ try { paymentRequest.update({ total: { label: 'LavaGO', amount: Math.round(state.price * 100) } }); } catch (e) {} }
+    if (paymentRequest){ try { paymentRequest.update({ total: { label: 'Mutua', amount: Math.round(state.price * 100) } }); } catch (e) {} }
   }
 
   /* ── INIT ── */
@@ -1664,155 +1443,207 @@
   /* ─── I18N ─── */
   const LANG = {
     fr: {
-      'page.title': 'LavaGO — Nettoyage à domicile',
-      'hero.tagline': 'Le nettoyage à domicile en quelques clics.<br>Un pro chez vous en moins de 30 minutes.',
-      'hero.cta': '✨ Réserver maintenant',
-      'feat1.title': 'Rapide comme Uber',
-      'feat1.desc': 'Un nettoyeur disponible est dispatché en temps réel près de chez vous.',
-      'feat2.title': 'Pros vérifiés',
-      'feat2.desc': 'Tous nos nettoyeurs sont assurés, formés et évalués par la communauté.',
-      'feat3.title': 'Paiement simple',
-      'feat3.desc': 'Payez en ligne ou en espèces. Prix transparent dès la réservation.',
-      'landing.start': 'Commencer',
-      'landing.cleanerLink': 'Vous êtes nettoyeur ? <span style="color:var(--brand-dark);font-weight:600;">Rejoignez-nous →</span>',
-      's1.title': 'Votre adresse',
-      's1.sub': 'Où devons-nous envoyer votre nettoyeur ?',
-      's1.street': 'Rue et numéro', 's1.zip': 'Code postal',
-      's1.city': 'Ville', 's1.extra': 'Complément (optionnel)',
-      's1.street.ph': 'ex: 14 rue de la Paix',
-      's1.city.ph': 'Paris',
-      's1.extra.ph': 'Bât. B, 3ème étage, code: 1234',
+      'page.title': 'Mutua — Solidarite au quotidien',
+      'hero.badge': '🤝 Plateforme solidaire',
+      'hero.tagline': "Un coup de main solidaire au quotidien.<br>Donnez du travail a une personne qui en a besoin.",
+      'hero.cta': '🤲 Demander un service',
+      'impact.families': 'familles aidees',
+      'impact.women': 'femmes',
+      'impact.wage': '/heure verse',
+      'impact.commission': 'commission',
+      'feat1.title': 'Menage & repassage',
+      'feat1.desc': 'Un coup de main pour garder votre maison impeccable.',
+      'feat2.title': 'Jardinage & recoltes',
+      'feat2.desc': 'Aide pour votre jardin, vos plantations et vos recoltes.',
+      'feat3.title': 'Courses & accompagnement',
+      'feat3.desc': 'Faire les courses, accompagner, aider au quotidien.',
+      'mission.title': 'Notre mission',
+      'mission.text': "Mutua met en relation des familles avec des travailleuses sud-americaines qui cherchent un emploi digne. 100% du tarif horaire est verse a la travailleuse. Pas de commission, pas d'intermediaire opaque.",
+      'landing.start': 'Demander un service',
+      'landing.workerLink': 'Vous cherchez du travail ? <span style="color:var(--brand-dark);font-weight:600;">Rejoignez Mutua →</span>',
+      's1.title': 'Quel service ?',
+      's1.sub': "Choisissez le type d'aide dont vous avez besoin.",
+      's1.error': '⚠️ Veuillez selectionner au moins un service.',
+      'svc.menage': 'Menage', 'svc.menage.desc': 'Nettoyage complet',
+      'svc.repassage': 'Repassage', 'svc.repassage.desc': 'Linge et repassage',
+      'svc.jardinage': 'Jardinage', 'svc.jardinage.desc': 'Tonte, taille, arrosage',
+      'svc.recolte': 'Recoltes', 'svc.recolte.desc': 'Cueillette, ramassage',
+      'svc.courses': 'Courses', 'svc.courses.desc': 'Faire les courses',
+      'svc.accompagnement': 'Accompagnement', 'svc.accompagnement.desc': 'Aide au quotidien',
+      'svc.vitres': 'Vitres', 'svc.vitres.desc': 'Nettoyage des vitres',
+      'svc.linge': 'Linge', 'svc.linge.desc': 'Tri, lavage, pliage',
+      'svc.cuisine': 'Cuisine simple', 'svc.cuisine.desc': 'Repas maison du quotidien',
+      'svc.gardeenfant': "Garde d'enfants", 'svc.gardeenfant.desc': "Sortie d'ecole et garde",
       'next': 'Continuer →',
-      's2.title': 'Pièces à nettoyer',
-      's2.sub': 'Sélectionnez les espaces concernés (plusieurs choix possibles).',
-      's2.error': '⚠️ Veuillez sélectionner au moins une pièce.',
-      'room.cuisine': 'Cuisine', 'room.chambre': 'Chambre',
-      'room.salle_bain': 'Salle de bain', 'room.salon': 'Salon / Séjour',
-      'room.bureau': 'Bureau', 'room.entree': 'Entrée / Couloir',
-      'room.complet': 'Nettoyage Complet',
-      'room.complet.desc': 'Toutes les pièces incluses — 15% de remise',
-      's3.title': 'Durée du service',
-      's3.sub': "Combien d'heures souhaitez-vous réserver ?",
-      's3.next': 'Voir le récapitulatif →',
-      'pr.rate.lbl': 'Taux horaire', 'pr.rooms.lbl': 'Options pièces',
-      'pr.discount.lbl': 'Remise nettoyage complet', 'pr.total.lbl': 'Total estimé',
-      's4.title': 'Récapitulatif',
-      's4.sub': 'Vérifiez votre commande avant de confirmer.',
-      's4.addr': '📍 Adresse', 's4.rooms': '🧹 Pièces sélectionnées', 's4.dur': '⏱️ Durée',
-      's4.totalLabel': 'TOTAL ESTIMÉ', 's4.totalNote': 'Paiement sécurisé · débité après le service',
-      's4.confirm': '🚀 Payer {amount} et trouver un nettoyeur',
+      's2.title': 'Votre adresse',
+      's2.sub': 'Ou devons-nous envoyer votre travailleuse ?',
+      's2.street': 'Rue et numero', 's2.zip': 'Code postal',
+      's2.city': 'Ville', 's2.extra': 'Complement (optionnel)',
+      's3.title': 'Choisir sa travailleuse',
+      's3.sub': 'Decouvrez les profils disponibles pres de chez vous. Chaque reservation = un emploi digne.',
+      's3.error': '⚠️ Veuillez choisir une travailleuse.',
+      'fair.wage': '<strong>💚 Tarif equitable :</strong> 18€/h verses directement a la travailleuse. Mutua ne prend aucune commission.',
+      'fair.total': '<strong>💚 Revenu direct :</strong> {amount} iront directement dans la poche de {name}.',
+      's4.title': 'Duree du service',
+      's4.sub': "Combien d'heures souhaitez-vous reserver ? Chaque heure compte.",
+      's4.next': 'Voir le recapitulatif →',
+      'pr.rate.lbl': 'Taux horaire', 'pr.fair.lbl': 'Revenu travailleuse',
+      'pr.fee.lbl': 'Frais plateforme', 'pr.total.lbl': 'Total a payer',
+      's5.title': 'Recapitulatif',
+      's5.sub': 'Verifiez votre commande avant de confirmer. Merci pour votre solidarite.',
+      's5.service': '🔧 Service', 's5.worker': '👩 Travailleuse', 's5.addr': '📍 Adresse', 's5.dur': '⏱️ Duree',
+      's5.economy': '💰 Modele economique',
+      's5.totalLabel': 'TOTAL A PAYER', 's5.totalNote': '100% verse a la travailleuse · 0% commission',
+      's5.confirm': '🤲 Confirmer et aider {name}',
       'map.useLocation': '📍 Ma position', 'map.locate': '🔍 Localiser',
-      'map.hint': 'Glissez le repère sur la carte ou saisissez votre adresse.',
-      'map.geoErr': 'Impossible de récupérer votre position.',
-      'map.noGeo': 'Géolocalisation non supportée par ce navigateur.',
+      'map.hint': 'Glissez le repere sur la carte ou saisissez votre adresse.',
+      'map.geoErr': 'Impossible de recuperer votre position.',
+      'map.noGeo': 'Geolocalisation non supportee par ce navigateur.',
       'pay.title': '💳 Paiement', 'pay.card': 'Carte',
-      'pay.cardNum': 'Numéro de carte', 'pay.exp': 'Expiration', 'pay.name': 'Nom sur la carte',
-      'pay.secure': 'Paiement sécurisé · chiffré SSL', 'pay.poweredBy': 'Propulsé par Stripe',
+      'pay.cardNum': 'Numero de carte', 'pay.exp': 'Expiration', 'pay.name': 'Nom sur la carte',
+      'pay.secure': 'Paiement securise · chiffre SSL', 'pay.poweredBy': 'Propulse par Stripe',
       'pay.walletHint': 'Confirmez avec Face ID, Touch ID ou votre empreinte.',
       'pay.processing': 'Paiement en cours…',
-      'pay.error.num': 'Numéro de carte invalide.', 'pay.error.exp': "Date d'expiration invalide.", 'pay.error.cvc': 'Code CVC invalide.',
-      'search.title': 'Recherche en cours…',
-      'search.sub': 'Nous cherchons le meilleur nettoyeur<br>disponible près de chez vous.',
-      'search.cancel': 'Annuler la recherche',
-      'match.found': 'Nettoyeur trouvé !',
-      'match.etaLbl': "min d'arrivée", 'match.durLbl': 'durée réservée', 'match.priceLbl': 'prix estimé',
+      'pay.error.num': 'Numero de carte invalide.', 'pay.error.exp': "Date d'expiration invalide.", 'pay.error.cvc': 'Code CVC invalide.',
+      'search.title': 'Confirmation en cours…',
+      'search.sub': 'Nous contactons {name}<br>pour confirmer sa disponibilite.',
+      'search.impact': "Grace a vous, <strong>{hours}</strong> de travail remunere equitablement.",
+      'search.cancel': 'Annuler',
+      'match.found': 'Travailleuse confirmee !',
+      'match.etaLbl': "min d'arrivee", 'match.durLbl': 'duree reservee', 'match.priceLbl': 'revenu direct',
+      'match.here': 'En France depuis {n} ans',
       'match.track': '📍 Suivre en direct', 'match.contact': '💬 Contacter',
-      'match.cancel': '✕ Annuler la réservation',
-      'tr1.title': 'Réservation confirmée', 'tr1.desc': 'Votre demande a bien été prise en compte.',
-      'tr2.title': 'Nettoyeur en route',
-      'tr3.title': 'Arrivée', 'tr3.desc': 'Votre nettoyeur est devant chez vous.',
-      'tr4.title': 'Service en cours', 'tr4.desc': 'Le nettoyage de votre domicile est en cours.',
-      'tr5.title': 'Service terminé', 'tr5.desc': 'Votre domicile est impeccable !',
-      'tr.demo': 'Simuler la fin du service (démo)',
-      'done.title': 'Service terminé !',
-      'done.sub': "Votre domicile est impeccable.<br>Merci d'avoir choisi LavaGO.",
-      'done.rate': 'Notez votre nettoyeur',
-      'done.receipt': '🧾 Reçu',
-      'rc.svc': 'Service', 'rc.rooms': 'Pièces', 'rc.cleaner': 'Nettoyeur', 'rc.total': 'Total payé',
-      'done.newBooking': 'Nouvelle réservation', 'done.back': "Retour à l'accueil",
-      'alert.addr': 'Veuillez renseigner votre adresse complète.',
-      'confirm.cancel': 'Annuler la réservation ?',
-      'services': 'services effectués', 'h.menage': 'h de ménage',
+      'match.cancel': '✕ Annuler la reservation',
+      'tr1.title': 'Reservation confirmee', 'tr1.desc': 'Votre demande a bien ete prise en compte.',
+      'tr2.title': 'En route',
+      'tr3.title': 'Arrivee', 'tr3.desc': 'Votre travailleuse est devant chez vous.',
+      'tr4.title': 'Service en cours', 'tr4.desc': 'Le service est en cours. Merci pour votre confiance !',
+      'tr5.title': 'Service termine', 'tr5.desc': "Le service est termine ! N'oubliez pas de laisser un avis.",
+      'tr.demo': 'Simuler la fin du service (demo)',
+      'done.title': 'Service termine !',
+      'done.sub': "Merci d'avoir fait confiance a Mutua.<br>Votre solidarite fait toute la difference.",
+      'done.impact': '💚 Votre impact',
+      'done.impact.text': "Grace a vous, <strong>{hours}</strong> de travail remunere a <strong>{name}</strong>. Chaque heure compte pour reconstruire une vie digne.",
+      'done.rate': 'Notez votre travailleuse',
+      'done.receipt': '🧾 Recu',
+      'rc.svc': 'Service', 'rc.worker': 'Travailleuse', 'rc.total': 'Total paye', 'rc.fair': 'Revenu direct',
+      'done.newBooking': 'Nouvelle reservation', 'done.back': "Retour a l'accueil",
+      'alert.addr': 'Veuillez renseigner votre adresse complete.',
+      'confirm.cancel': 'Annuler la reservation ?',
+      'services': 'services effectues',
+      'years.france': 'ans en France',
+      'worker.story': 'Son histoire',
+      'country.colombia': 'Colombie',
+      'country.peru': 'Perou',
+      'country.ecuador': 'Equateur',
+      'country.bolivia': 'Bolivie',
+      'country.argentina': 'Argentine',
+      'country.venezuela': 'Venezuela',
+      'h.menage': 'h de travail',
       'h.hour': 'heure', 'h.hours': 'heures',
-      'nettoyage.complet': 'Nettoyage Complet',
-      'summary.complet': 'Nettoyage Complet (toutes pièces)',
-      'eta.text': 'Arrivée dans environ {n} minutes…',
-      'rating.1': 'Décevant 😕', 'rating.2': 'Peut mieux faire 😐',
-      'rating.3': 'Bien 🙂', 'rating.4': 'Très bien 😊', 'rating.5': 'Excellent ! 🤩',
+      'eta.text': 'Arrivee dans environ {n} minutes…',
+      'rating.1': 'Decevant 😕', 'rating.2': 'Peut mieux faire 😐',
+      'rating.3': 'Bien 🙂', 'rating.4': 'Tres bien 😊', 'rating.5': 'Excellent ! 🤩',
     },
     es: {
-      'page.title': 'LavaGO — Limpieza a domicilio',
-      'hero.tagline': 'La limpieza a domicilio en pocos clics.<br>Un profesional en tu casa en menos de 30 minutos.',
-      'hero.cta': '✨ Reservar ahora',
-      'feat1.title': 'Rápido como Uber',
-      'feat1.desc': 'Un limpiador disponible es enviado en tiempo real cerca de ti.',
-      'feat2.title': 'Profesionales verificados',
-      'feat2.desc': 'Todos nuestros limpiadores están asegurados, formados y evaluados por la comunidad.',
-      'feat3.title': 'Pago sencillo',
-      'feat3.desc': 'Paga en línea o en efectivo. Precio transparente desde la reserva.',
-      'landing.start': 'Empezar',
-      'landing.cleanerLink': '¿Eres limpiador? <span style="color:var(--brand-dark);font-weight:600;">Únete →</span>',
-      's1.title': 'Tu dirección',
-      's1.sub': '¿Dónde enviamos a tu limpiador?',
-      's1.street': 'Calle y número', 's1.zip': 'Código postal',
-      's1.city': 'Ciudad', 's1.extra': 'Complemento (opcional)',
-      's1.street.ph': 'ej: Calle Mayor 14',
-      's1.city.ph': 'Madrid',
-      's1.extra.ph': 'Edif. B, 3ª planta, código: 1234',
+      'page.title': 'Mutua — Solidaridad diaria',
+      'hero.badge': '🤝 Plataforma solidaria',
+      'hero.tagline': 'Una mano solidaria en el dia a dia.<br>Dale trabajo a una persona que lo necesita.',
+      'hero.cta': '🤲 Solicitar un servicio',
+      'impact.families': 'familias ayudadas',
+      'impact.women': 'mujeres',
+      'impact.wage': '/hora pagada',
+      'impact.commission': 'comision',
+      'feat1.title': 'Limpieza y planchado',
+      'feat1.desc': 'Una mano para mantener tu casa impecable.',
+      'feat2.title': 'Jardineria y cosechas',
+      'feat2.desc': 'Ayuda para tu jardin, plantaciones y cosechas.',
+      'feat3.title': 'Compras y acompanamiento',
+      'feat3.desc': 'Hacer las compras, acompanar, ayudar en el dia a dia.',
+      'mission.title': 'Nuestra mision',
+      'mission.text': 'Mutua conecta familias con trabajadoras sudamericanas que buscan un empleo digno. El 100% de la tarifa horaria va directamente a la trabajadora. Sin comisiones, sin intermediarios opacos.',
+      'landing.start': 'Solicitar un servicio',
+      'landing.workerLink': '¿Buscas trabajo? <span style="color:var(--brand-dark);font-weight:600;">Unete a Mutua →</span>',
+      's1.title': '¿Que servicio?',
+      's1.sub': 'Elige el tipo de ayuda que necesitas.',
+      's1.error': '⚠️ Por favor selecciona al menos un servicio.',
+      'svc.menage': 'Limpieza', 'svc.menage.desc': 'Limpieza completa',
+      'svc.repassage': 'Planchado', 'svc.repassage.desc': 'Ropa y planchado',
+      'svc.jardinage': 'Jardineria', 'svc.jardinage.desc': 'Corte, poda, riego',
+      'svc.recolte': 'Cosechas', 'svc.recolte.desc': 'Recoleccion, recogida',
+      'svc.courses': 'Compras', 'svc.courses.desc': 'Hacer las compras',
+      'svc.accompagnement': 'Acompanamiento', 'svc.accompagnement.desc': 'Ayuda en el dia a dia',
+      'svc.vitres': 'Ventanas', 'svc.vitres.desc': 'Limpieza de ventanas',
+      'svc.linge': 'Ropa', 'svc.linge.desc': 'Clasificar, lavar y doblar',
+      'svc.cuisine': 'Cocina simple', 'svc.cuisine.desc': 'Comida casera diaria',
+      'svc.gardeenfant': 'Cuidado infantil', 'svc.gardeenfant.desc': 'Recogida escolar y cuidado',
       'next': 'Continuar →',
-      's2.title': 'Habitaciones a limpiar',
-      's2.sub': 'Selecciona los espacios a limpiar (selección múltiple).',
-      's2.error': '⚠️ Por favor selecciona al menos una habitación.',
-      'room.cuisine': 'Cocina', 'room.chambre': 'Dormitorio',
-      'room.salle_bain': 'Baño', 'room.salon': 'Salón / Comedor',
-      'room.bureau': 'Oficina', 'room.entree': 'Entrada / Pasillo',
-      'room.complet': 'Limpieza Completa',
-      'room.complet.desc': 'Todas las habitaciones incluidas — 15% de descuento',
-      's3.title': 'Duración del servicio',
-      's3.sub': '¿Cuántas horas deseas reservar?',
-      's3.next': 'Ver el resumen →',
-      'pr.rate.lbl': 'Tarifa por hora', 'pr.rooms.lbl': 'Opciones habitaciones',
-      'pr.discount.lbl': 'Descuento limpieza completa', 'pr.total.lbl': 'Total estimado',
-      's4.title': 'Resumen',
-      's4.sub': 'Verifica tu pedido antes de confirmar.',
-      's4.addr': '📍 Dirección', 's4.rooms': '🧹 Habitaciones seleccionadas', 's4.dur': '⏱️ Duración',
-      's4.totalLabel': 'TOTAL ESTIMADO', 's4.totalNote': 'Pago seguro · cargado tras el servicio',
-      's4.confirm': '🚀 Pagar {amount} y encontrar un limpiador',
-      'map.useLocation': '📍 Mi ubicación', 'map.locate': '🔍 Localizar',
-      'map.hint': 'Arrastra el marcador en el mapa o escribe tu dirección.',
-      'map.geoErr': 'No se pudo obtener tu ubicación.',
-      'map.noGeo': 'Geolocalización no compatible con este navegador.',
+      's2.title': 'Tu direccion',
+      's2.sub': '¿A donde enviamos a tu trabajadora?',
+      's2.street': 'Calle y numero', 's2.zip': 'Codigo postal',
+      's2.city': 'Ciudad', 's2.extra': 'Complemento (opcional)',
+      's3.title': 'Elegir trabajadora',
+      's3.sub': 'Descubre los perfiles disponibles cerca de ti. Cada reserva = un empleo digno.',
+      's3.error': '⚠️ Por favor elige una trabajadora.',
+      'fair.wage': '<strong>💚 Tarifa justa:</strong> 18€/h pagados directamente a la trabajadora. Mutua no cobra comision.',
+      'fair.total': '<strong>💚 Ingreso directo:</strong> {amount} iran directamente al bolsillo de {name}.',
+      's4.title': 'Duracion del servicio',
+      's4.sub': '¿Cuantas horas deseas reservar? Cada hora cuenta.',
+      's4.next': 'Ver el resumen →',
+      'pr.rate.lbl': 'Tarifa por hora', 'pr.fair.lbl': 'Ingreso trabajadora',
+      'pr.fee.lbl': 'Comision plataforma', 'pr.total.lbl': 'Total a pagar',
+      's5.title': 'Resumen',
+      's5.sub': 'Verifica tu pedido antes de confirmar. Gracias por tu solidaridad.',
+      's5.service': '🔧 Servicio', 's5.worker': '👩 Trabajadora', 's5.addr': '📍 Direccion', 's5.dur': '⏱️ Duracion',
+      's5.economy': '💰 Modelo economico',
+      's5.totalLabel': 'TOTAL A PAGAR', 's5.totalNote': '100% pagado a la trabajadora · 0% comision',
+      's5.confirm': '🤲 Confirmar y ayudar a {name}',
+      'map.useLocation': '📍 Mi ubicacion', 'map.locate': '🔍 Localizar',
+      'map.hint': 'Arrastra el marcador en el mapa o escribe tu direccion.',
+      'map.geoErr': 'No se pudo obtener tu ubicacion.',
+      'map.noGeo': 'Geolocalizacion no compatible con este navegador.',
       'pay.title': '💳 Pago', 'pay.card': 'Tarjeta',
-      'pay.cardNum': 'Número de tarjeta', 'pay.exp': 'Caducidad', 'pay.name': 'Nombre en la tarjeta',
+      'pay.cardNum': 'Numero de tarjeta', 'pay.exp': 'Caducidad', 'pay.name': 'Nombre en la tarjeta',
       'pay.secure': 'Pago seguro · cifrado SSL', 'pay.poweredBy': 'Desarrollado por Stripe',
       'pay.walletHint': 'Confirma con Face ID, Touch ID o tu huella.',
       'pay.processing': 'Procesando pago…',
-      'pay.error.num': 'Número de tarjeta no válido.', 'pay.error.exp': 'Fecha de caducidad no válida.', 'pay.error.cvc': 'Código CVC no válido.',
-      'search.title': 'Buscando…',
-      'search.sub': 'Buscamos al mejor limpiador<br>disponible cerca de ti.',
-      'search.cancel': 'Cancelar búsqueda',
-      'match.found': '¡Limpiador encontrado!',
-      'match.etaLbl': 'min de llegada', 'match.durLbl': 'duración reservada', 'match.priceLbl': 'precio estimado',
+      'pay.error.num': 'Numero de tarjeta no valido.', 'pay.error.exp': 'Fecha de caducidad no valida.', 'pay.error.cvc': 'Codigo CVC no valido.',
+      'search.title': 'Confirmando…',
+      'search.sub': 'Contactamos a {name}<br>para confirmar su disponibilidad.',
+      'search.impact': 'Gracias a ti, <strong>{hours}</strong> de trabajo remunerado justamente.',
+      'search.cancel': 'Cancelar',
+      'match.found': '¡Trabajadora confirmada!',
+      'match.etaLbl': 'min de llegada', 'match.durLbl': 'duracion reservada', 'match.priceLbl': 'ingreso directo',
+      'match.here': 'En Francia desde hace {n} anos',
       'match.track': '📍 Seguir en directo', 'match.contact': '💬 Contactar',
       'match.cancel': '✕ Cancelar la reserva',
       'tr1.title': 'Reserva confirmada', 'tr1.desc': 'Tu solicitud ha sido recibida correctamente.',
-      'tr2.title': 'Limpiador en camino',
-      'tr3.title': 'Llegada', 'tr3.desc': 'Tu limpiador está en tu puerta.',
-      'tr4.title': 'Servicio en curso', 'tr4.desc': 'La limpieza de tu hogar está en curso.',
-      'tr5.title': 'Servicio finalizado', 'tr5.desc': '¡Tu hogar está impecable!',
+      'tr2.title': 'En camino',
+      'tr3.title': 'Llegada', 'tr3.desc': 'Tu trabajadora esta en tu puerta.',
+      'tr4.title': 'Servicio en curso', 'tr4.desc': 'El servicio esta en curso. Gracias por tu confianza!',
+      'tr5.title': 'Servicio finalizado', 'tr5.desc': '¡El servicio ha terminado! No olvides dejar una opinion.',
       'tr.demo': 'Simular fin del servicio (demo)',
       'done.title': '¡Servicio completado!',
-      'done.sub': 'Tu hogar está impecable.<br>Gracias por elegir LavaGO.',
-      'done.rate': 'Valora a tu limpiador',
+      'done.sub': 'Gracias por confiar en Mutua.<br>Tu solidaridad marca la diferencia.',
+      'done.impact': '💚 Tu impacto',
+      'done.impact.text': 'Gracias a ti, <strong>{hours}</strong> de trabajo remunerado para <strong>{name}</strong>. Cada hora cuenta para reconstruir una vida digna.',
+      'done.rate': 'Valora a tu trabajadora',
       'done.receipt': '🧾 Recibo',
-      'rc.svc': 'Servicio', 'rc.rooms': 'Habitaciones', 'rc.cleaner': 'Limpiador', 'rc.total': 'Total pagado',
+      'rc.svc': 'Servicio', 'rc.worker': 'Trabajadora', 'rc.total': 'Total pagado', 'rc.fair': 'Ingreso directo',
       'done.newBooking': 'Nueva reserva', 'done.back': 'Volver al inicio',
-      'alert.addr': 'Por favor completa tu dirección completa.',
+      'alert.addr': 'Por favor completa tu direccion completa.',
       'confirm.cancel': '¿Cancelar la reserva?',
-      'services': 'servicios realizados', 'h.menage': 'h de limpieza',
+      'services': 'servicios realizados',
+      'years.france': 'anos en Francia',
+      'worker.story': 'Su historia',
+      'country.colombia': 'Colombia',
+      'country.peru': 'Peru',
+      'country.ecuador': 'Ecuador',
+      'country.bolivia': 'Bolivia',
+      'country.argentina': 'Argentina',
+      'country.venezuela': 'Venezuela',
+      'h.menage': 'h de trabajo',
       'h.hour': 'hora', 'h.hours': 'horas',
-      'nettoyage.complet': 'Limpieza Completa',
-      'summary.complet': 'Limpieza Completa (todas las habitaciones)',
       'eta.text': 'Llegada en aproximadamente {n} minutos…',
       'rating.1': 'Decepcionante 😕', 'rating.2': 'Puede mejorar 😐',
       'rating.3': 'Bien 🙂', 'rating.4': 'Muy bien 😊', 'rating.5': '¡Excelente! 🤩',
@@ -1831,29 +1662,68 @@
     document.title = t('page.title');
     document.getElementById('btn-fr').classList.toggle('active', lang === 'fr');
     document.getElementById('btn-es').classList.toggle('active', lang === 'es');
-    ROOMS_INFO.cuisine.label    = t('room.cuisine');
-    ROOMS_INFO.chambre.label    = t('room.chambre');
-    ROOMS_INFO.salle_bain.label = t('room.salle_bain');
-    ROOMS_INFO.salon.label      = t('room.salon');
-    ROOMS_INFO.bureau.label     = t('room.bureau');
-    ROOMS_INFO.entree.label     = t('room.entree');
-    ROOMS_INFO.complet.label    = t('room.complet');
+    SERVICES_INFO.menage.label         = t('svc.menage');
+    SERVICES_INFO.repassage.label      = t('svc.repassage');
+    SERVICES_INFO.jardinage.label      = t('svc.jardinage');
+    SERVICES_INFO.recolte.label        = t('svc.recolte');
+    SERVICES_INFO.courses.label        = t('svc.courses');
+    SERVICES_INFO.accompagnement.label = t('svc.accompagnement');
+    SERVICES_INFO.vitres.label         = t('svc.vitres');
+    SERVICES_INFO.linge.label          = t('svc.linge');
+    SERVICES_INFO.cuisine.label        = t('svc.cuisine');
+    SERVICES_INFO.gardeenfant.label    = t('svc.gardeenfant');
     applyLang();
-    if (state.currentScreen === 'screen-booking' && state.step === 4) buildSummary();
+    applyDynamicI18n();
+    if (state.currentScreen === 'screen-booking' && state.step === 5) buildSummary();
     else updatePayUI();
+    if (state.step === 3) renderWorkers();
   }
 
   function applyLang() {
     document.querySelectorAll('[data-i18n]').forEach(el => {
+      if (el.id === 'fair-total-text' || el.id === 'search-subtitle-text' || el.id === 'search-impact-text' || el.id === 'done-impact-text') return;
       el.innerHTML = t(el.dataset.i18n);
     });
     const street = document.getElementById('addr-street');
     const city   = document.getElementById('addr-city');
     const extra  = document.getElementById('addr-extra');
-    if (street) street.placeholder = t('s1.street.ph');
-    if (city)   city.placeholder   = t('s1.city.ph');
-    if (extra)  extra.placeholder  = t('s1.extra.ph');
+    if (street) street.placeholder = currentLang === 'fr' ? 'ex: 14 rue de la Paix' : 'ej: Calle Mayor 14';
+    if (city)   city.placeholder   = currentLang === 'fr' ? 'Paris' : 'Madrid';
+    if (extra)  extra.placeholder  = currentLang === 'fr' ? 'Bat. B, 3eme etage, code: 1234' : 'Edif. B, 3ª planta, codigo: 1234';
   }
+
+  function applyDynamicI18n() {
+    const fairAmount = document.getElementById('wage-total') ? document.getElementById('wage-total').textContent : (state.price + ' €');
+    const fairName = document.getElementById('wage-name') ? document.getElementById('wage-name').textContent : (state.worker ? state.worker.name : '—');
+    const fairText = document.getElementById('fair-total-text');
+    if (fairText) {
+      if (currentLang === 'fr') fairText.innerHTML = '<strong>💚 Revenu direct :</strong> <span id="wage-total">' + fairAmount + '</span> iront directement dans la poche de <span id="wage-name">' + fairName + '</span>.';
+      else fairText.innerHTML = '<strong>💚 Ingreso directo:</strong> <span id="wage-total">' + fairAmount + '</span> iran directamente al bolsillo de <span id="wage-name">' + fairName + '</span>.';
+    }
+
+    const searchName = state.worker ? state.worker.name : '—';
+    const searchHours = state.hours + 'h';
+    const searchSub = document.getElementById('search-subtitle-text');
+    if (searchSub) {
+      if (currentLang === 'fr') searchSub.innerHTML = 'Nous contactons <strong id="search-name">' + searchName + '</strong><br>pour confirmer sa disponibilite.';
+      else searchSub.innerHTML = 'Contactamos a <strong id="search-name">' + searchName + '</strong><br>para confirmar su disponibilidad.';
+    }
+    const searchImpact = document.getElementById('search-impact-text');
+    if (searchImpact) {
+      if (currentLang === 'fr') searchImpact.innerHTML = 'Grace a vous, <strong id="search-hours">' + searchHours + '</strong> de travail remunere equitablement.';
+      else searchImpact.innerHTML = 'Gracias a ti, <strong id="search-hours">' + searchHours + '</strong> de trabajo remunerado justamente.';
+    }
+
+    const impactHours = state.hours + 'h';
+    const impactName = state.worker ? getWorkerFirstName(state.worker) : '—';
+    const doneImpact = document.getElementById('done-impact-text');
+    if (doneImpact) {
+      if (currentLang === 'fr') doneImpact.innerHTML = 'Grace a vous, <strong id="impact-hours">' + impactHours + '</strong> de travail remunere a <strong id="impact-name">' + impactName + '</strong>. Chaque heure compte pour reconstruire une vie digne.';
+      else doneImpact.innerHTML = 'Gracias a ti, <strong id="impact-hours">' + impactHours + '</strong> de trabajo remunerado para <strong id="impact-name">' + impactName + '</strong>. Cada hora cuenta para reconstruir una vida digna.';
+    }
+  }
+
+  setLang('fr');
 </script>
 </body>
 </html>
